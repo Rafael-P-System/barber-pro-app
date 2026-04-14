@@ -11,16 +11,16 @@ import HomeScreen from './src/screens/HomeScreen';
 import ConfirmacaoScreen from './src/screens/ConfirmacaoScreen';
 import BarberScreen from './src/screens/BarberScreen';
 
-// 🆕 NOVAS IMPORTAÇÕES (Ajuste o caminho se necessário)
-import AdminDashboard from './src/screens/admin/AdminDashboard';
-import MaintenanceScreen from './src/screens/public/MaintenanceScreen';
+// Ajuste dos caminhos
+import AdminDashboard from './src/screens/AdminDashboard';
+import MaintenanceScreen from './src/screens/MaintenanceScreen';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Splash">
         
         {/* Telas Iniciais */}
         <Stack.Screen name="Splash" component={SplashScreen} />
@@ -36,11 +36,8 @@ export default function App() {
         {/* Visão do Barbeiro */}
         <Stack.Screen name="Barber" component={BarberScreen} />
 
-        {/* 🆕 ROTAS DE GESTÃO DO NEGÓCIO (SaaS) */}
-        {/* Tela que só o Rafael (ADMIN) acessa */}
+        {/* Gestão do Negócio */}
         <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
-        
-        {/* Tela que aparece quando o barbeiro não paga */}
         <Stack.Screen name="Maintenance" component={MaintenanceScreen} />
 
       </Stack.Navigator>

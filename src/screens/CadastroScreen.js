@@ -98,7 +98,7 @@ export default function LoginScreen({ navigation }) {
     <View style={{ flex: 1, backgroundColor: '#0F172A', justifyContent: 'center', padding: 20 }}>
 
       <Image
-        source={require('../../assets/images/logo.png')}
+        source={require('./assets/logo.png')}
         style={{ width: 100, height: 100, borderRadius: 50, alignSelf: 'center', marginBottom: 20 }}
       />
 

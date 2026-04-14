@@ -22,7 +22,7 @@ export default function SplashScreen({ navigation }) {
 
       {/* IMAGEM REDONDA */}
       <Image
-        source={require('../../assets/images/logo.png')}
+        source={require('./assets/logo.png')}
         style={{
           width: 120,
           height: 120,
