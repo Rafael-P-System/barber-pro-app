@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, StyleSheet, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../services/api'; // Certifique-se que o caminho está correto
+import api from '../services/api'; 
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -14,61 +14,126 @@ export default function LoginScreen({ navigation }) {
     }
 
     try {
-      // 1. Enviamos para a rota de login no Java
+      // 1. Rota dinâmica baseada no botão clicado
       const endpoint = tipo === 'cliente' ? '/cliente/login' : '/barbeiro/login';
       const response = await api.post(endpoint, { email, senha });
 
       if (response.status === 200) {
         const usuario = response.data;
 
-        // 2. LÓGICA DE ANALISTA: Verificação de Status e Perfil
+        // ✅ SALVAMENTO GLOBAL: Guarda o ID e Nome para usar nos agendamentos depois
+        await AsyncStorage.setItem('usuarioLogado', JSON.stringify(usuario));
+
+        // 2. LÓGICA DE STATUS (Para o seu modelo de negócio SaaS)
         if (usuario.status === 'SUSPENSO') {
-          // Se o barbeiro não pagou, manda para a tela de "Disfarce"
-          navigation.replace('Maintenance'); 
+          navigation.replace('MaintenanceScreen'); 
           return;
         }
 
-        // 3. SEPARAÇÃO DE ACESSOS
-        if (usuario.perfil === 'ADMIN') {
-          // Se for VOCÊ (rafa08622@gmail.com)
-          Alert.alert("Bem-vindo, Rafael!", "Painel de Gestão liberado.");
-          await AsyncStorage.setItem('adminLogado', JSON.stringify(usuario));
+        // 3. SEPARAÇÃO DE ACESSOS (Batendo com as colunas do seu MySQL)
+        // Usamos 'nivel' para barbeiro/admin e 'tipo' para cliente
+        if (usuario.nivel === 'ADM') {
+          Alert.alert("Bem-vindo,Rafael!", "Painel de Gestão liberado.");
           navigation.replace('AdminDashboard'); 
         } 
         else if (tipo === 'barbeiro') {
-          // Se for um Barbeiro ativo
-          await AsyncStorage.setItem('barbeiroLogado', JSON.stringify(usuario));
-          navigation.replace('Barber');
+          navigation.replace('BarberScreen');
         } 
         else {
-          // Se for um Cliente
-          await AsyncStorage.setItem('clienteLogado', JSON.stringify(usuario));
-          navigation.replace('Cliente');
+          navigation.replace('ClienteScreen');
         }
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("Erro", "E-mail ou senha incorretos ou servidor fora do ar.");
+      if (error.response && error.response.status === 401) {
+        Alert.alert("Erro", "E-mail ou senha incorretos.");
+      } else {
+        Alert.alert("Erro", "Servidor fora do ar. Verifique se o Java está rodando.");
+      }
     }
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#0F172A', justifyContent: 'center', padding: 20 }}>
-      {/* Seus Inputs de Email e Senha aqui */}
+    <View style={styles.container}>
+      <Text style={styles.title}>Seja Bem vindo!</Text>
+      
+      <TextInput
+        style={styles.input}
+        placeholder="E-mail"
+        placeholderTextColor="#94A3B8"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Senha"
+        placeholderTextColor="#94A3B8"
+        secureTextEntry
+        value={senha}
+        onChangeText={setSenha}
+      />
 
       <TouchableOpacity
         onPress={() => realizarLogin('cliente')} 
-        style={{ backgroundColor: '#0A84FF', padding: 15, borderRadius: 8, marginBottom: 10 }}
+        style={styles.buttonCliente}
       >
-        <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>Entrar como Cliente</Text>
+        <Text style={styles.buttonText}>Sou Cliente</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         onPress={() => realizarLogin('barbeiro')} 
-        style={{ backgroundColor: '#10B981', padding: 15, borderRadius: 8 }}
+        style={styles.buttonBarbeiro}
       >
-        <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>Entrar como Barbeiro / Admin</Text>
+        <Text style={styles.buttonText}>Sou Barbeiro / Admin</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { 
+    flex: 1, 
+    backgroundColor: '#03060e', 
+    justifyContent: 'center', 
+    padding: 20 
+  },
+  title: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 40
+  },
+  input: {
+    backgroundColor: '#1E293B',
+    color: '#fff',
+    padding: 18,
+    borderRadius: 12,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#334155',
+    fontSize: 16
+  },
+  buttonCliente: { 
+    backgroundColor: '#0a44a0', 
+    padding: 16, 
+    borderRadius: 12, 
+    marginBottom: 12,
+    elevation: 3
+  },
+  buttonBarbeiro: { 
+    backgroundColor: '#15977d', 
+    padding: 16, 
+    borderRadius: 12,
+    elevation: 3
+  },
+  buttonText: { 
+    color: '#fff', 
+    textAlign: 'center', 
+    fontWeight: 'bold',
+    fontSize: 16
+  }
+});

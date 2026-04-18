@@ -14,20 +14,19 @@ export default function SplashScreen({ navigation }) {
     <View
       style={{
         flex: 1,
-        backgroundColor: '#09aec4',
+        backgroundColor: '#0e7d8b', 
         justifyContent: 'center',
         alignItems: 'center',
       }}
     >
-
       {/* IMAGEM REDONDA */}
       <Image
-        source={require('./assets/logo.png')}
+        source={require('../assets/logo.png')} // ✅ caminho corrigido
         style={{
           width: 120,
           height: 120,
           borderRadius: 60, // 🔥 deixa redondo automático
-          marginBottom: 20
+          marginBottom: 20,
         }}
         resizeMode="cover"
       />
@@ -39,9 +38,8 @@ export default function SplashScreen({ navigation }) {
           color: '#000',
         }}
       >
-        RAEL Barber
+        RAEL BARBEARIA
       </Text>
-
     </View>
   );
 }

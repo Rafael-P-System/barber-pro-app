@@ -11,7 +11,7 @@ import HomeScreen from './src/screens/HomeScreen';
 import ConfirmacaoScreen from './src/screens/ConfirmacaoScreen';
 import BarberScreen from './src/screens/BarberScreen';
 
-// Ajuste dos caminhos
+// Ajuste dos caminhos barbearia-a
 import AdminDashboard from './src/screens/AdminDashboard';
 import MaintenanceScreen from './src/screens/MaintenanceScreen';
 
