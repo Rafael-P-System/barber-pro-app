@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet, TextInput, Image, Dimensions, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../services/api'; 
+import api from '../services/api';          // ✅ correto
+import logo from '../assets/logo.png';      // ✅ se quiser importar direto
 
 const { width } = Dimensions.get('window');
 
@@ -24,17 +25,17 @@ export default function LoginScreen({ navigation }) {
         await AsyncStorage.setItem('usuarioLogado', JSON.stringify(usuario));
 
         if (usuario.status === 'SUSPENSO') {
-          navigation.replace('MaintenanceScreen'); 
+          navigation.replace('Maintenance'); // ✅ corrigido
           return;
         }
 
         if (usuario.nivel === 'ADM') {
           Alert.alert("Bem-vindo, Rafael!", "Painel de Gestão liberado.");
-          navigation.replace('AdminDashboard'); 
+          navigation.replace('AdminDashboard'); // ✅ já estava correto
         } else if (tipo === 'barbeiro') {
-          navigation.replace('BarberScreen');
+          navigation.replace('Barber'); // ✅ corrigido
         } else {
-          navigation.replace('ClienteScreen');
+          navigation.replace('Cliente'); // ✅ corrigido
         }
       }
     } catch (error) {

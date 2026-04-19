@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, Switch, StyleSheet, TouchableOpacity, Linking, StatusBar } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient'; // Se não tiver, use View com backgroundColor
-import api from '../services/api';
+import api from '../services/api'
 
 export default function AdminDashboard() {
   const [barbearias, setBarbearias] = useState([]);

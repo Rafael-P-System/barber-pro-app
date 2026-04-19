@@ -1,5 +1,6 @@
 import { StyleSheet, Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
+import api from '../services/api';          // ✅ se precisar backend
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F172A', padding: 20 },

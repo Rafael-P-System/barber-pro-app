@@ -1,5 +1,7 @@
 import { StyleSheet, Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
+import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import api from '../services/api';          // ✅ para salvar cadastro
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F172A', padding: 20 },

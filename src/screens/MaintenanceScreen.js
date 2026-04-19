@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
+import logo from '../assets/logo.png';      // ✅ se usar logo
 
 const { width } = Dimensions.get('window');
 

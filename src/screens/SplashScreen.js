@@ -6,7 +6,7 @@ const { width } = Dimensions.get('window');
 export default function SplashScreen({ navigation }) {
   useEffect(() => {
     const timer = setTimeout(() => {
-      navigation.replace('Login');
+      navigation.replace('Login'); // ✅ rota correta
     }, 4000);
     return () => clearTimeout(timer);
   }, []);
@@ -20,10 +20,11 @@ export default function SplashScreen({ navigation }) {
         alignItems: 'center',
       }}
     >
+      {/* Logo - confirmada em src/assets/logo.png */}
       <Image
-        source={require('../assets/logo.png')}
+        source={require('../assets/logo.png')} // ✅ caminho correto
         style={{
-          width: width < 400 ? 100 : 150,   // menor em telas pequenas, maior em desktop
+          width: width < 400 ? 100 : 150,
           height: width < 400 ? 100 : 150,
           borderRadius: width < 400 ? 50 : 75,
           marginBottom: 20,
@@ -33,9 +34,9 @@ export default function SplashScreen({ navigation }) {
 
       <Text
         style={{
-          fontSize: width < 400 ? 18 : 26, // ajusta fonte conforme tela
+          fontSize: width < 400 ? 18 : 26,
           fontWeight: 'bold',
-          color: '#000',
+          color: '#fff', // ✅ contraste melhor
           textAlign: 'center',
         }}
       >

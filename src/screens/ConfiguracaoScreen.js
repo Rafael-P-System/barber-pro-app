@@ -1,4 +1,7 @@
 import { StyleSheet, Dimensions } from 'react-native';
+import api from '../services/api';              // se precisar salvar configs
+import logo from '../assets/logo.png';          // se usar logo
+
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
