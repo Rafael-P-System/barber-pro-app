@@ -1,12 +1,13 @@
-import { View, Text, Image } from 'react-native';
+import { View, Text, Image, Dimensions } from 'react-native';
 import { useEffect } from 'react';
+
+const { width } = Dimensions.get('window');
 
 export default function SplashScreen({ navigation }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       navigation.replace('Login');
     }, 4000);
-
     return () => clearTimeout(timer);
   }, []);
 
@@ -14,18 +15,17 @@ export default function SplashScreen({ navigation }) {
     <View
       style={{
         flex: 1,
-        backgroundColor: '#0e7d8b', 
+        backgroundColor: '#0e7d8b',
         justifyContent: 'center',
         alignItems: 'center',
       }}
     >
-      {/* IMAGEM REDONDA */}
       <Image
-        source={require('../assets/logo.png')} // ✅ caminho corrigido
+        source={require('../assets/logo.png')}
         style={{
-          width: 120,
-          height: 120,
-          borderRadius: 60, // 🔥 deixa redondo automático
+          width: width < 400 ? 100 : 150,   // menor em telas pequenas, maior em desktop
+          height: width < 400 ? 100 : 150,
+          borderRadius: width < 400 ? 50 : 75,
           marginBottom: 20,
         }}
         resizeMode="cover"
@@ -33,9 +33,10 @@ export default function SplashScreen({ navigation }) {
 
       <Text
         style={{
-          fontSize: 22,
+          fontSize: width < 400 ? 18 : 26, // ajusta fonte conforme tela
           fontWeight: 'bold',
           color: '#000',
+          textAlign: 'center',
         }}
       >
         RAEL BARBEARIA

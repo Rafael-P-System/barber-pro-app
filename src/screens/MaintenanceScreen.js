@@ -1,12 +1,13 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export default function MaintenanceScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
       
-      {/* Círculo de destaque para o ícone */}
       <View style={styles.iconCircle}>
         <Text style={styles.icon}>🛠️</Text>
       </View>
@@ -41,12 +42,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     alignItems: 'center', 
     padding: 30, 
-    backgroundColor: '#0F172A' // Dark Navy Blue
+    backgroundColor: '#0F172A' 
   },
   iconCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: width < 400 ? 90 : 120,
+    height: width < 400 ? 90 : 120,
+    borderRadius: width < 400 ? 45 : 60,
     backgroundColor: '#1E293B',
     justifyContent: 'center',
     alignItems: 'center',
@@ -54,9 +55,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#334155'
   },
-  icon: { fontSize: 60 },
+  icon: { fontSize: width < 400 ? 40 : 60 },
   title: { 
-    fontSize: 26, 
+    fontSize: width < 400 ? 20 : 26, 
     fontWeight: 'bold', 
     color: '#F8FAFC', 
     marginBottom: 20,
@@ -64,42 +65,44 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#1E293B',
-    padding: 20,
+    padding: width < 400 ? 14 : 20,
     borderRadius: 15,
     width: '100%',
+    maxWidth: 500,
     borderLeftWidth: 4,
-    borderLeftColor: '#3B82F6' // Azul de destaque
+    borderLeftColor: '#3B82F6'
   },
   message: { 
-    fontSize: 16, 
+    fontSize: width < 400 ? 14 : 16, 
     textAlign: 'left', 
     color: '#94A3B8', 
-    lineHeight: 24 
+    lineHeight: 22 
   },
   highlight: {
     color: '#3B82F6',
     fontWeight: 'bold',
     marginTop: 15,
-    fontSize: 14
+    fontSize: width < 400 ? 12 : 14
   },
   button: {
     marginTop: 40,
     backgroundColor: '#3B82F6',
-    paddingVertical: 15,
-    paddingHorizontal: 40,
+    paddingVertical: width < 400 ? 12 : 15,
+    paddingHorizontal: width < 400 ? 30 : 40,
     borderRadius: 10,
     width: '100%',
+    maxWidth: 400,
     alignItems: 'center'
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
-    fontSize: 16
+    fontSize: width < 400 ? 14 : 16
   },
   footer: { 
     position: 'absolute',
     bottom: 30,
-    fontSize: 12, 
+    fontSize: width < 400 ? 11 : 12, 
     color: '#475569', 
     letterSpacing: 1
   }

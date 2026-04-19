@@ -1,3 +1,4 @@
+
 {
   "expo": {
     "name": "BarbeariaApp",
@@ -20,13 +21,17 @@
       "package": "com.rafael.barbeariaapp",
       "versionCode": 1
     },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "@react-native-community/datetimepicker"
+    ],
     "extra": {
       "eas": {
         "projectId": "c7c3ddbe-74b1-4499-a6e1-d5780cf748c3"
       }
-    },
-    "plugins": [
-      "@react-native-community/datetimepicker"
-    ]
+    }
   }
 }
