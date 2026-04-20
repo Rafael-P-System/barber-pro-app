@@ -1,13 +1,10 @@
 import axios from 'axios';
+import { Platform } from 'react-native';
 
-const api = axios.create({
-  baseURL: 'http://192.168.10.12:8080',
-  timeout: 10000, // Aumentei para 10s para evitar o timeout de rede
-});
+const baseURL =
+  Platform.OS === 'web'
+    ? 'http://localhost:8080/api'   // navegador
+    : 'http://192.168.10.14:8080/api'; // celular na mesma rede
 
-// Funções de chamada para a API
-export const cadastrarBarbeiro = (dados) => api.post('/barbeiro', dados);
-export const loginBarbeiro = (dados) => api.post('/barbeiro/login', dados);
-export const listarServicos = () => api.get('/servico');
-
+const api = axios.create({ baseURL });
 export default api;

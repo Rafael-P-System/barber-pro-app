@@ -1,7 +1,8 @@
+import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, Linking, Alert, StyleSheet, Dimensions } from 'react-native';
-import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
+
 
 const { width } = Dimensions.get('window');
 

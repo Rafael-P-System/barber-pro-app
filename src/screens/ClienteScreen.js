@@ -1,8 +1,35 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import api from '../services/api';          // ✅ se precisar backend
-import logo from '../assets/logo.png';      // ✅ se usar logo
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+
 const { width } = Dimensions.get('window');
+
+export default function ClienteScreen({ navigation }) {
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.welcome}>Bem-vindo, Cliente!</Text>
+        <Text style={styles.title}>Área do Cliente</Text>
+
+        {/* Botão de logout */}
+        <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.replace('Login')}>
+          <Text style={styles.logoutText}>Sair</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.sectionTitle}>Serviços disponíveis</Text>
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyStateText}>Nenhum agendamento encontrado.</Text>
+        </View>
+
+        {/* Botão para ver serviços */}
+        <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.servicesBtn}>
+          <Text style={styles.servicesText}>Ver serviços</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F172A' },
@@ -18,58 +45,10 @@ const styles = StyleSheet.create({
   title: { color: '#fff', fontSize: width < 400 ? 18 : 22, fontWeight: 'bold' },
   logoutBtn: { backgroundColor: 'rgba(248, 113, 113, 0.1)', padding: 8, borderRadius: 8 },
   logoutText: { color: '#f87171', fontWeight: 'bold' },
-  
   content: { flex: 1, paddingHorizontal: 25 },
-  
-  mainCard: { 
-    backgroundColor: '#3B82F6', 
-    borderRadius: 20, 
-    padding: width < 400 ? 18 : 25, 
-    flexDirection: 'row', 
-    alignItems: 'center',
-    marginBottom: 30,
-    elevation: 8,
-    shadowColor: '#3B82F6',
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    width: '100%',
-    maxWidth: 500,
-    alignSelf: 'center'
-  },
-  mainCardInfo: { flex: 1 },
-  mainCardTitle: { color: '#fff', fontSize: width < 400 ? 16 : 20, fontWeight: 'bold' },
-  mainCardSub: { color: 'rgba(255, 255, 255, 0.8)', fontSize: width < 400 ? 12 : 13, marginTop: 5 },
-  mainCardIcon: { fontSize: width < 400 ? 30 : 40 },
-
   sectionTitle: { color: '#fff', fontSize: width < 400 ? 16 : 18, fontWeight: 'bold', marginBottom: 15 },
-  
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 30 },
-  categoryCard: { 
-    backgroundColor: '#1E293B', 
-    width: '47%', 
-    maxWidth: 220, 
-    padding: width < 400 ? 14 : 20, 
-    borderRadius: 15, 
-    alignItems: 'center', 
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: '#334155'
-  },
-  categoryIcon: { fontSize: width < 400 ? 20 : 24, marginBottom: 8 },
-  categoryName: { color: '#fff', fontWeight: '600', fontSize: width < 400 ? 13 : 14 },
-
-  historyCard: { 
-    backgroundColor: '#1E293B', 
-    borderRadius: 20, 
-    padding: width < 400 ? 14 : 20, 
-    marginBottom: 40,
-    borderWidth: 1,
-    borderColor: '#334155',
-    width: '100%',
-    maxWidth: 500,
-    alignSelf: 'center'
-  },
-  historyTitle: { color: '#fff', fontSize: width < 400 ? 14 : 16, fontWeight: 'bold', marginBottom: 15 },
   emptyState: { padding: 20, alignItems: 'center' },
-  emptyStateText: { color: '#64748B', textAlign: 'center', fontSize: width < 400 ? 12 : 14 }
+  emptyStateText: { color: '#64748B', textAlign: 'center', fontSize: width < 400 ? 12 : 14 },
+  servicesBtn: { marginTop: 20, backgroundColor: '#0A84FF', padding: 12, borderRadius: 10, alignItems: 'center' },
+  servicesText: { color: '#fff', fontWeight: 'bold', fontSize: width < 400 ? 14 : 16 }
 });

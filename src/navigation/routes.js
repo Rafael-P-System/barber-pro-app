@@ -1,75 +1,32 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Dimensions } from 'react-native';
-
-// Import das telas
-import LoginScreen from '../screens/LoginScreen';
-import CadastroScreen from '../screens/CadastroScreen';
+import HomeScreen from '../screens/HomeScreen';
 import ClienteScreen from '../screens/ClienteScreen';
-import BarberScreen from '../screens/BarberScreen';
-import ConfirmacaoScreen from '../screens/ConfirmacaoScreen';
-import ConfiguracaoScreen from '../screens/ConfiguracaoScreen';
-import SplashScreen from '../screens/SplashScreen';
+import BarberScreen from '../screens/BarbeiroScreen';
+import CadastroScreen from '../screens/CadastroScreen';
+import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import MaintenanceScreen from '../screens/MaintenanceScreen';
-import CadastroBarbeiro from '../screens/CadastroBarbeiro';
-
+import ConfiguracaoScreen from '../screens/ConfiguracaoScreen';
+import ConfirmacaoScreen from '../screens/ConfirmacaoScreen';
+import LoginScreen from '../screens/LoginScreen';
+import SplashScreen from '../screens/SplashScreen';
+import CadastroBarbeiroScreen from '../screens/CadastroBarbeiroScreen';
 const Stack = createStackNavigator();
-const { width } = Dimensions.get('window');
 
 export default function Routes() {
   return (
-    <Stack.Navigator initialRouteName="Splash">
-      <Stack.Screen 
-        name="Splash" 
-        component={SplashScreen} 
-        options={{ headerShown: false }} 
-      />
-      <Stack.Screen 
-        name="Login" 
-        component={LoginScreen} 
-        options={{ headerShown: false }} 
-      />
-      <Stack.Screen 
-        name="Cadastro" 
-        component={CadastroScreen} 
-        options={{ 
-          title: width < 400 ? 'Cadastro' : 'Crie sua conta',
-          headerTitleStyle: { fontSize: width < 400 ? 16 : 20 }
-        }} 
-      />
-      <Stack.Screen 
-        name="CadastroBarbeiro" 
-        component={CadastroBarbeiro} 
-        options={{ title: 'Cadastro Barbeiro' }} 
-      />
-      <Stack.Screen 
-        name="Cliente" 
-        component={ClienteScreen} 
-        options={{ title: 'Área do Cliente' }} 
-      />
-      <Stack.Screen 
-        name="Barber" 
-        component={BarberScreen} 
-        options={{ 
-          title: 'Painel do Barbeiro', 
-          headerBackVisible: false 
-        }} 
-      />
-      <Stack.Screen 
-        name="Confirmacao" 
-        component={ConfirmacaoScreen} 
-        options={{ title: 'Confirmação' }} 
-      />
-      <Stack.Screen 
-        name="Configuracao" 
-        component={ConfiguracaoScreen} 
-        options={{ title: 'Configurações' }} 
-      />
-      <Stack.Screen 
-        name="Maintenance" 
-        component={MaintenanceScreen} 
-        options={{ title: 'Manutenção' }} 
-      />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Splash" component={SplashScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="Cliente" component={ClienteScreen} />
+      <Stack.Screen name="Barber" component={BarberScreen} />
+      <Stack.Screen name="Cadastro" component={CadastroScreen} />
+      <Stack.Screen name="CadastroBarbeiro" component={CadastroBarbeiroScreen} />
+      <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
+      <Stack.Screen name="Maintenance" component={MaintenanceScreen} />
+      <Stack.Screen name="Configuracao" component={ConfiguracaoScreen} />
+      <Stack.Screen name="Confirmacao" component={ConfirmacaoScreen} />
     </Stack.Navigator>
   );
 }
