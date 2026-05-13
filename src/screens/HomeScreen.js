@@ -1,70 +1,262 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Dimensions, 
+  TouchableOpacity, 
+  Image, 
+  ScrollView, 
+  Platform 
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
 export default function HomeScreen({ navigation }) {
+  const [servicoSelecionado, setServicoSelecionado] = useState(null);
+  const [horarioSelecionado, setHorarioSelecionado] = useState(null);
+
+  const [servicos] = useState([
+    { id: 1, nome: 'Corte', preco: '30,00' },
+    { id: 2, nome: 'Barba', preco: '20,00' },
+    { id: 3, nome: 'Maquina e Tesoura', preco: '70,00' },
+    { id: 4, nome: 'Maquina', preco: '30,00' },
+    { id: 5, nome: 'Sobrancelha', preco: '20,00' },
+    { id: 6, nome: 'Combo', preco: '70,00' },
+  ]);
+
+  // 🔥 GERA HORÁRIOS AUTOMATICAMENTE ATÉ 19:00
+  const gerarHorarios = () => {
+    const lista = [];
+    let hora = 8;
+    let minuto = 0;
+    let id = 1;
+
+    while (hora < 19 || (hora === 19 && minuto === 0)) {
+      const horaFormatada = `${String(hora).padStart(2, '0')}:${String(minuto).padStart(2, '0')}`;
+
+      lista.push({
+        id: id++,
+        hora: horaFormatada,
+        ocupado: false, // depois vem da API
+        meuAgendamento: false
+      });
+
+      minuto += 40;
+
+      if (minuto >= 60) {
+        hora += 1;
+        minuto -= 60;
+      }
+    }
+
+    return lista;
+  };
+
+  const [horarios, setHorarios] = useState(gerarHorarios());
+
+  const cancelarMeuAgendamento = (id) => {
+    const novos = horarios.map(h => {
+      if (h.id === id) {
+        return { ...h, ocupado: false, meuAgendamento: false };
+      }
+      return h;
+    });
+    setHorarios(novos);
+    setHorarioSelecionado(null);
+  };
+
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
+
+      {/* BOTÃO VOLTAR */}
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.btnVoltar}>
+        <Text style={{ color: '#FFD700', fontSize: 16 }}>← Voltar</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>Serviços disponíveis</Text>
-      <Text style={styles.label}>Escolha um corte ou barba:</Text>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 20 }}>
-        <TouchableOpacity style={styles.card}>
-          <Image source={require('../assets/logo.png')} style={styles.icon} />
-          <Text style={styles.cardText}>Corte</Text>
-          <Text style={styles.cardPrice}>R$ 30,00</Text>
-        </TouchableOpacity>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollServicos}>
+        {servicos.map((item) => (
+          <TouchableOpacity 
+            key={item.id}
+            style={[
+              styles.card, 
+              servicoSelecionado === item.id && styles.cardSelecionado
+            ]}
+            onPress={() => setServicoSelecionado(item.id)}
+          >
+            <Image source={require('../assets/logo.png')} style={styles.icon} />
+            <Text style={styles.cardText}>{item.nome}</Text>
+            <Text style={styles.cardPrice}>R$ {item.preco}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
 
-        <TouchableOpacity style={styles.card}>
-          <Image source={require('../assets/logo.png')} style={styles.icon} />
-          <Text style={styles.cardText}>Barba</Text>
-          <Text style={styles.cardPrice}>R$ 20,00</Text>
-        </TouchableOpacity>
+      <Text style={styles.label}>Horários para hoje:</Text>
 
-        <TouchableOpacity style={styles.card}>
-          <Image source={require('../assets/logo.png')} style={styles.icon} />
-          <Text style={styles.cardText}>Corte Máquina</Text>
-          <Text style={styles.cardPrice}>R$ 20,00</Text>
-        </TouchableOpacity>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollHorarios}>
+        {horarios.map((item) => (
+          <View key={item.id} style={styles.containerHorario}>
 
-        <TouchableOpacity style={styles.card}>
-          <Image source={require('../assets/logo.png')} style={styles.icon} />
-          <Text style={styles.cardText}>Corte Tesoura</Text>
-          <Text style={styles.cardPrice}>R$ 25,00</Text>
-        </TouchableOpacity>
+            <TouchableOpacity 
+              disabled={item.ocupado && !item.meuAgendamento}
+              style={[
+                styles.btnHora,
 
-        <TouchableOpacity style={styles.card}>
-          <Image source={require('../assets/logo.png')} style={styles.icon} />
-          <Text style={styles.cardText}>Combo</Text>
-          <Text style={styles.cardPrice}>R$ 70,00</Text>
-        </TouchableOpacity>
+                // selecionado
+                horarioSelecionado?.id === item.id && styles.horarioSelecionado,
 
-        <TouchableOpacity style={styles.card}>
-          <Image source={require('../assets/logo.png')} style={styles.icon} />
-          <Text style={styles.cardText}>Máquina + Tesoura</Text>
-          <Text style={styles.cardPrice}>R$ 25,00</Text>
-        </TouchableOpacity>
+                // ocupado
+                item.ocupado && !item.meuAgendamento && styles.btnOcupado,
+
+                // meu horário
+                item.meuAgendamento && styles.meuHorario
+              ]}
+              onPress={() => {
+                if (!item.ocupado) {
+                  setHorarioSelecionado(item);
+                }
+              }}
+            >
+              <Text style={[
+                styles.cardText,
+                item.ocupado && !item.meuAgendamento && { color: '#AAA' }
+              ]}>
+                {item.hora}
+              </Text>
+            </TouchableOpacity>
+
+            {item.meuAgendamento && (
+              <TouchableOpacity 
+                style={styles.btnCancelar}
+                onPress={() => cancelarMeuAgendamento(item.id)}
+              >
+                <Text style={styles.btnCancelarText}>Cancelar</Text>
+              </TouchableOpacity>
+            )}
+
+          </View>
+        ))}
       </ScrollView>
 
       <TouchableOpacity 
-        style={styles.btnSalvar}
-        onPress={() => navigation.navigate('Confirmacao', { servico: 'Corte', horario: '14h', valor: 30 })}
+        style={[
+          styles.btnSalvar, 
+          (!servicoSelecionado || !horarioSelecionado) && { opacity: 0.5 }
+        ]}
+        disabled={!servicoSelecionado || !horarioSelecionado}
+        onPress={() => navigation.navigate('Confirmacao', { 
+          servico: servicoSelecionado, 
+          horario: horarioSelecionado 
+        })}
       >
-        <Text style={styles.btnText}>Agendar</Text>
+        <Text style={styles.btnText}>Confirmar Agendamento</Text>
       </TouchableOpacity>
-    </View>
+
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F172A', padding: 20 },
-  title: { color: '#fff', fontSize: width < 400 ? 18 : 24, marginTop: 15, fontWeight: 'bold' },
-  label: { color: '#fff', marginTop: 25, fontSize: width < 400 ? 14 : 16 },
-  card: { backgroundColor: '#1E293B', padding: width < 400 ? 10 : 15, borderRadius: 12, marginRight: 10, minWidth: width < 400 ? 110 : 150, alignItems: 'center' },
-  icon: { width: width < 400 ? 30 : 50, height: width < 400 ? 30 : 50, marginBottom: 8 },
-  cardText: { color: '#fff', fontWeight: 'bold', fontSize: width < 400 ? 12 : 14 },
-  cardPrice: { color: '#94A3B8', marginTop: 4, fontSize: width < 400 ? 12 : 14 },
-  btnSalvar: { backgroundColor: '#0A84FF', padding: width < 400 ? 14 : 18, borderRadius: 12, marginTop: 20 },
-  btnText: { color: '#fff', textAlign: 'center', fontWeight: 'bold', fontSize: width < 400 ? 14 : 16 }
+  container: { flex: 1, padding: 20 },
+
+  btnVoltar: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    zIndex: 10
+  },
+
+  title: { 
+    color: '#FFD700', 
+    fontSize: width < 400 ? 22 : isWeb ? 32 : 28, 
+    marginTop: 60, 
+    fontWeight: 'bold', 
+    textAlign: 'center' 
+  },
+
+  label: { 
+    color: '#FFF', 
+    marginTop: 25, 
+    fontSize: width < 400 ? 16 : isWeb ? 20 : 18, 
+    fontWeight: 'bold' 
+  },
+
+  scrollServicos: { maxHeight: 150, marginTop: 20 },
+
+  card: { 
+    backgroundColor: '#1E293B', 
+    padding: 15, 
+    borderRadius: 12, 
+    marginRight: 10, 
+    minWidth: 130, 
+    alignItems: 'center', 
+    height: 120 
+  },
+
+  cardSelecionado: { backgroundColor: '#FFD700' },
+
+  icon: { width: 40, height: 40, marginBottom: 8 },
+
+  cardText: { color: '#FFF', fontWeight: 'bold' },
+
+  cardPrice: { color: '#94A3B8', marginTop: 4 },
+
+  scrollHorarios: { marginTop: 15, maxHeight: 120 },
+
+  containerHorario: { alignItems: 'center', marginRight: 15 },
+
+  btnHora: { 
+    backgroundColor: '#1E293B', 
+    padding: 15, 
+    borderRadius: 10, 
+    minWidth: 80, 
+    alignItems: 'center' 
+  },
+
+  horarioSelecionado: {
+    backgroundColor: '#FFD700'
+  },
+
+  meuHorario: {
+    backgroundColor: '#22C55E'
+  },
+
+  btnOcupado: { 
+    backgroundColor: '#475569', 
+    opacity: 0.4 
+  },
+
+  btnCancelar: { 
+    backgroundColor: '#FF3B30', 
+    padding: 8, 
+    borderRadius: 5, 
+    marginTop: 5, 
+    width: '100%' 
+  },
+
+  btnCancelarText: { 
+    color: '#FFF', 
+    fontSize: 10, 
+    fontWeight: 'bold', 
+    textAlign: 'center' 
+  },
+
+  btnSalvar: { 
+    backgroundColor: '#0A84FF', 
+    padding: 18, 
+    borderRadius: 12, 
+    marginTop: 'auto', 
+    marginBottom: 20 
+  },
+
+  btnText: { 
+    color: '#FFF', 
+    textAlign: 'center', 
+    fontWeight: 'bold', 
+    fontSize: 16 
+  }
 });

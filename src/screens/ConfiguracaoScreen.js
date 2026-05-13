@@ -1,25 +1,70 @@
-import { StyleSheet, Dimensions } from 'react-native';
-import api from '../services/api';              // se precisar salvar configs
-import logo from '../assets/logo.png';          // se usar logo
+import React from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  Dimensions, 
+  Platform, 
+  TouchableOpacity 
+} from 'react-native';
+import api from '../services/api';
+import logo from '../assets/logo.png';
+import { LinearGradient } from 'expo-linear-gradient';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
 export default function ConfiguracaoScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Configurações</Text>
-      {/* Aqui você pode adicionar opções de configuração */}
-    </View>
+    <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
+      <View style={styles.card}>
+        <Text style={styles.header}>Configurações</Text>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Conta</Text>
+          <TouchableOpacity style={styles.item}>
+            <Text style={styles.itemText}>Alterar Senha</Text>
+            <Icon name="chevron-right" size={22} color="#FFD700" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.item}>
+            <Text style={styles.itemText}>Excluir Conta</Text>
+            <Icon name="chevron-right" size={22} color="#FFD700" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Sistema</Text>
+          <TouchableOpacity style={styles.item}>
+            <Text style={styles.itemText}>Notificações</Text>
+            <Icon name="chevron-right" size={22} color="#FFD700" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.item}>
+            <Text style={styles.itemText}>Tema</Text>
+            <Icon name="chevron-right" size={22} color="#FFD700" />
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.version}>Versão 1.0.0</Text>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F172A', padding: 20 },
+  container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  card: {
+    backgroundColor: 'rgba(26,26,26,0.9)',
+    padding: width < 400 ? 20 : width * 0.08,
+    borderRadius: 20,
+    width: isWeb ? (width > 800 ? 500 : 420) : width * 0.9,
+    alignItems: 'center'
+  },
   header: {
-    color: '#fff',
-    fontSize: width < 400 ? 22 : 28,
+    color: '#FFD700',
+    fontSize: width < 400 ? 22 : isWeb ? 32 : 28,
     fontWeight: 'bold',
-    marginTop: 40,
+    marginTop: 20,
     marginBottom: 30,
     textAlign: 'center'
   },
@@ -33,7 +78,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center'
   },
   sectionTitle: {
-    color: '#94A3B8',
+    color: '#FFD700',
     fontSize: width < 400 ? 12 : 14,
     fontWeight: 'bold',
     marginLeft: 10,
@@ -46,15 +91,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: width < 400 ? 12 : 15,
     borderBottomWidth: 0.5,
-    borderBottomColor: '#334155'
+    borderBottomColor: '#444'
   },
   itemText: {
-    color: '#fff',
-    fontSize: width < 400 ? 14 : 16
+    color: '#FFF',
+    fontSize: width < 400 ? 14 : isWeb ? 18 : 16
   },
-  arrow: { color: '#94A3B8', fontSize: width < 400 ? 18 : 20 },
   version: {
-    color: '#475569',
+    color: '#888',
     textAlign: 'center',
     marginTop: 20,
     fontSize: width < 400 ? 11 : 12

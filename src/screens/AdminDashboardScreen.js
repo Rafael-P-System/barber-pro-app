@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Switch, StyleSheet, TouchableOpacity, Linking, StatusBar, Dimensions, Alert } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  FlatList, 
+  Alert, 
+  Switch, 
+  StatusBar, 
+  Linking, 
+  Dimensions, 
+  Platform 
+} from 'react-native';
 import api from '../services/api';
+import { LinearGradient } from 'expo-linear-gradient';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const isWeb = Platform.OS === 'web';
 
 export default function AdminDashboardScreen({ navigation }) {
   const [barber, setBarber] = useState([]);
@@ -13,47 +28,58 @@ export default function AdminDashboardScreen({ navigation }) {
 
   const carregarBarber = async () => {
     try {
-      const response = await api.get('/admin/barber');
+      const response = await api.get('/admin/barbearias');
       setBarber(response.data);
     } catch (error) {
       console.error('Erro ao carregar barbeiros:', error);
-      Alert.alert('Erro', 'Não foi possível carregar os barbeiros.');
+      Alert.alert('Erro', 'Não foi possível carregar as barbearias.');
     }
   };
 
   const toggleStatus = async (id, statusAtual) => {
     const novoStatus = statusAtual === 'ATIVO' ? 'SUSPENSO' : 'ATIVO';
     try {
-      await api.put(`/admin/barber/${id}/status`, { status: novoStatus });
+      await api.put(`/admin/barbearia/${id}/status`, { status: novoStatus });
       carregarBarber();
+      Alert.alert('Sucesso', `Sistema ${novoStatus === 'ATIVO' ? 'Liberado' : 'Bloqueado'}!`);
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
-      Alert.alert('Erro', 'Não foi possível atualizar o status.');
+      Alert.alert('Erro', 'Falha ao comunicar com o servidor.');
     }
   };
 
-  const abrirWhatsapp = (telefone) => {
-    Linking.openURL(`https://wa.me/55${telefone}?text=Olá, Rafael aqui. Verificamos uma pendência no seu sistema de barbearia.`);
+  const abrirWhatsapp = (email) => {
+    const mensagem = `Olá, estamos entrando em contato sobre sua conta no Barbearia App.`;
+    const url = `whatsapp://send?text=${encodeURIComponent(mensagem)}`;
+    
+    Linking.canOpenURL(url).then(supported => {
+      if (supported) {
+        Linking.openURL(url);
+      } else {
+        Alert.alert('Erro', 'WhatsApp não está instalado ou não é suportado.');
+      }
+    });
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
       <StatusBar barStyle="light-content" />
       
       <View style={styles.headerContainer}>
-        <Text style={styles.headerTitle}>Gestão de Licenças</Text>
-        <Text style={styles.headerSubtitle}>Controle de Clientes SaaS</Text>
+        <View>
+          <Text style={styles.headerTitle}>Gestão Master</Text>
+          <Text style={styles.headerSubtitle}>Controle de Clientes SaaS</Text>
+        </View>
 
-        {/* Botão de logout */}
         <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.replace('Login')}>
           <Text style={styles.logoutText}>Sair</Text>
         </TouchableOpacity>
       </View>
 
       {barber.length === 0 ? (
-        <Text style={{color:'#94A3B8', textAlign:'center', marginTop:20}}>
-          Nenhuma barbearia cadastrada.
-        </Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>Nenhuma barbearia encontrada.</Text>
+        </View>
       ) : (
         <FlatList
           data={barber}
@@ -62,10 +88,11 @@ export default function AdminDashboardScreen({ navigation }) {
           renderItem={({ item }) => (
             <View style={styles.card}>
               <View style={styles.infoContainer}>
-                <Text style={styles.nome}>{item.nomeBarbearia}</Text>
+                <Text style={styles.nome}>{item.nome}</Text>
+                
                 <View style={styles.row}>
-                  <Text style={styles.label}>Vencimento:</Text>
-                  <Text style={styles.vencimento}> Dia {item.diaVencimento}</Text>
+                  <Text style={styles.label}>Email: </Text>
+                  <Text style={styles.vencimento}>{item.email}</Text>
                 </View>
                 
                 <View style={[styles.statusBadge, item.status === 'ATIVO' ? styles.badgeAtivo : styles.badgeSuspenso]}>
@@ -77,7 +104,9 @@ export default function AdminDashboardScreen({ navigation }) {
 
               <View style={styles.acoesContainer}>
                 <View style={styles.switchBox}>
-                  <Text style={styles.switchLabel}>{item.status === 'ATIVO' ? 'Liberado' : 'Bloqueado'}</Text>
+                  <Text style={styles.switchLabel}>
+                    {item.status === 'ATIVO' ? 'Acesso Ativo' : 'Acesso Cortado'}
+                  </Text>
                   <Switch
                     trackColor={{ false: '#334155', true: '#10B981' }}
                     thumbColor={item.status === 'ATIVO' ? '#fff' : '#94A3B8'}
@@ -88,10 +117,10 @@ export default function AdminDashboardScreen({ navigation }) {
                 
                 <TouchableOpacity 
                   style={styles.zapButton} 
-                  onPress={() => abrirWhatsapp(item.telefone)}
+                  onPress={() => abrirWhatsapp(item.email)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.zapIcon}>📱</Text>
+                  <Icon name="whatsapp" size={20} color="#000" style={{ marginRight: 6 }} />
                   <Text style={styles.zapText}>Notificar</Text>
                 </TouchableOpacity>
               </View>
@@ -99,56 +128,135 @@ export default function AdminDashboardScreen({ navigation }) {
           )}
         />
       )}
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F172A' },
+  container: {
+    flex: 1,
+  },
   headerContainer: {
     paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 25,
     backgroundColor: '#1E293B',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    elevation: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#444',
   },
-  headerTitle: { fontSize: 26, fontWeight: 'bold', color: '#F8FAFC' },
-  headerSubtitle: { fontSize: 14, color: '#94A3B8', marginTop: 5 },
-  logoutBtn: { backgroundColor: 'rgba(248, 113, 113, 0.1)', padding: 8, borderRadius: 8 },
-  logoutText: { color: '#f87171', fontWeight: 'bold' },
-  listContent: { padding: 20, paddingBottom: 40 },
+  headerTitle: {
+    fontSize: width < 400 ? 22 : isWeb ? 32 : 28,
+    fontWeight: 'bold',
+    color: '#FFD700',
+  },
+  headerSubtitle: {
+    fontSize: width < 400 ? 12 : 14,
+    color: '#888',
+  },
+  logoutBtn: {
+    backgroundColor: '#EF4444',
+    paddingVertical: width < 400 ? 8 : 12,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+  },
+  logoutText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: width < 400 ? 14 : isWeb ? 18 : 16,
+  },
+  listContent: {
+    padding: 15,
+  },
   card: {
     backgroundColor: '#1E293B',
-    borderRadius: 20,
-    marginBottom: 16,
-    padding: 20,
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#334155',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    borderColor: '#444',
+    width: '100%',
   },
-  infoContainer: { marginBottom: 15 },
-  nome: { fontSize: 20, fontWeight: 'bold', color: '#F8FAFC', marginBottom: 8 },
-  row: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  label: { color: '#94A3B8', fontSize: 14 },
-  vencimento: { color: '#F1F5F9', fontWeight: '600' },
-  statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, alignSelf: 'flex-start' },
-  badgeAtivo: { backgroundColor: 'rgba(16, 185, 129, 0.2)' },
-  badgeSuspenso: { backgroundColor: 'rgba(239, 68, 68, 0.2)' },
-  statusText: { fontSize: 12, fontWeight: 'bold', color: '#F8FAFC' },
-  divider: { height: 1, backgroundColor: '#334155', marginVertical: 10 },
-  acoesContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 },
-  switchBox: { alignItems: 'flex-start' },
-  switchLabel: { color: '#94A3B8', fontSize: 12, marginBottom: 4, textTransform: 'uppercase' },
-  zapButton: { backgroundColor: '#10B981', flexDirection: 'row', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 16, borderRadius: 12 },
-  zapIcon: { fontSize: 18, marginRight: 8 },
-  zapText: { color: '#fff', fontWeight: 'bold' }
+  infoContainer: {
+    marginBottom: 10,
+  },
+  nome: {
+    fontSize: width < 400 ? 16 : isWeb ? 20 : 18,
+    fontWeight: 'bold',
+    color: '#FFF',
+    marginBottom: 5,
+  },
+  row: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  label: {
+    color: '#94A3B8',
+    fontSize: 14,
+  },
+  vencimento: {
+    color: '#CBD5E1',
+    fontSize: 14,
+  },
+  statusBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginTop: 5,
+  },
+  badgeAtivo: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+  },
+  badgeSuspenso: {
+    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#444',
+    marginVertical: 12,
+  },
+  acoesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  switchBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  switchLabel: {
+    color: '#94A3B8',
+    marginRight: 10,
+    fontSize: 13,
+  },
+  zapButton: {
+    flexDirection: 'row',
+    backgroundColor: '#FFD700',
+    paddingVertical: width < 400 ? 8 : 12,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  zapText: {
+    color: '#000',
+    fontWeight: '600',
+    fontSize: width < 400 ? 14 : isWeb ? 18 : 16,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: '#888',
+    fontSize: width < 400 ? 14 : isWeb ? 18 : 16,
+  }
 });

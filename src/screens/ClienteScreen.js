@@ -1,30 +1,80 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import axios from 'axios'; // Certifique-se de ter o axios instalado
 
 const { width } = Dimensions.get('window');
 
-export default function ClienteScreen({ navigation }) {
+export default function ClienteScreen({ navigation, route }) {
+  const [loading, setLoading] = useState(false);
+  // Pegando o nome do cliente que veio do Login (exemplo)
+  const clienteNome = route.params?.nome || "Cliente"; 
+
+  // Função para simular ou realizar um agendamento rápido
+  const realizarAgendamentoRapido = async () => {
+    setLoading(true);
+    try {
+      // AJUSTE: Enviando o JSON no formato que o Back-end espera
+      const response = await axios.post('http://SEU_IP:8080/api/agendamentos/agendar', {
+        cliente: clienteNome,
+        hora: "10:00", // Aqui você pegaria de um seletor de horários
+        barbeiro: { id: 1 } // ID do barbeiro selecionado
+      });
+
+      if (response.data === "Dia cheio. Cliente adicionado na fila.") {
+        Alert.alert("Fila de Espera", "Não temos horários para hoje, mas você foi adicionado à fila!");
+      } else {
+        Alert.alert("Sucesso!", "Seu horário foi reservado.");
+      }
+
+    } catch (error) {
+      if (error.response && error.response.status === 503) {
+        // 🔥 TRAVA SaaS: Mensagem de manutenção para não constranger o barbeiro
+        Alert.alert("Aviso", "O sistema está em manutenção temporária. Tente novamente mais tarde.");
+      } else {
+        Alert.alert("Erro", "Não foi possível realizar o agendamento.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.welcome}>Bem-vindo, Cliente!</Text>
-        <Text style={styles.title}>Área do Cliente</Text>
+        <View>
+          <Text style={styles.welcome}>Bem-vindo, {clienteNome}!</Text>
+          <Text style={styles.title}>Área do Cliente</Text>
+        </View>
 
-        {/* Botão de logout */}
         <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.replace('Login')}>
           <Text style={styles.logoutText}>Sair</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Serviços disponíveis</Text>
+        <Text style={styles.sectionTitle}>Seus agendamentos</Text>
+        
         <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>Nenhum agendamento encontrado.</Text>
+          {loading ? (
+            <ActivityIndicator color="#0A84FF" />
+          ) : (
+            <Text style={styles.emptyStateText}>Nenhum agendamento encontrado.</Text>
+          )}
         </View>
 
-        {/* Botão para ver serviços */}
-        <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.servicesBtn}>
-          <Text style={styles.servicesText}>Ver serviços</Text>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('Home')} 
+          style={styles.servicesBtn}
+        >
+          <Text style={styles.servicesText}>Ver serviços e horários</Text>
+        </TouchableOpacity>
+
+        {/* Botão de teste para validar o seu Back-end novo */}
+        <TouchableOpacity 
+          onPress={realizarAgendamentoRapido} 
+          style={[styles.servicesBtn, { backgroundColor: '#22C55E', marginTop: 10 }]}
+        >
+          <Text style={styles.servicesText}>Agendamento Rápido (Teste)</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -49,6 +99,6 @@ const styles = StyleSheet.create({
   sectionTitle: { color: '#fff', fontSize: width < 400 ? 16 : 18, fontWeight: 'bold', marginBottom: 15 },
   emptyState: { padding: 20, alignItems: 'center' },
   emptyStateText: { color: '#64748B', textAlign: 'center', fontSize: width < 400 ? 12 : 14 },
-  servicesBtn: { marginTop: 20, backgroundColor: '#0A84FF', padding: 12, borderRadius: 10, alignItems: 'center' },
+  servicesBtn: { marginTop: 20, backgroundColor: '#0A84FF', padding: 15, borderRadius: 10, alignItems: 'center' },
   servicesText: { color: '#fff', fontWeight: 'bold', fontSize: width < 400 ? 14 : 16 }
 });
