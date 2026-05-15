@@ -1,29 +1,21 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Para salvar o token no celular
 
-const baseURL =
-  Platform.OS === 'web'
-    ? 'http://localhost:8080/api'
-    : 'http://192.168.10.11:8080/api';
+const api = axios.create({
+  // O Expo buscará o IP que você configurou no arquivo .env
+  baseURL: process.env.EXPO_PUBLIC_API_URL, 
+});
 
-const api = axios.create({ baseURL });
-
-// 🔥 interceptor CORRETO (funciona mobile + web)
+// AJUSTE DE SEGURANÇA: Injeta o Token em cada chamada automaticamente
 api.interceptors.request.use(async (config) => {
-
-  let token = null;
-
-  if (Platform.OS === 'web') {
-    token = localStorage.getItem('jwtToken');
-  } else {
-    token = await AsyncStorage.getItem('jwtToken');
+  try {
+    const token = await AsyncStorage.getItem('@BarberPro:token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch (error) {
+    console.error("Erro ao recuperar token", error);
   }
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
   return config;
 });
 
