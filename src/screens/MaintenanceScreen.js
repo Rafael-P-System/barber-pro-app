@@ -6,11 +6,13 @@ import {
   TouchableOpacity, 
   StatusBar, 
   Dimensions, 
-  Platform 
+  Platform,
+  SafeAreaView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
 export default function MaintenanceScreen({ navigation }) {
@@ -18,35 +20,56 @@ export default function MaintenanceScreen({ navigation }) {
     <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
       <StatusBar barStyle="light-content" />
       
-      <View style={styles.iconCircle}>
-        <Text style={styles.icon}>🛠️</Text>
-      </View>
+      <SafeAreaView style={styles.content}>
+        
+        <View style={styles.mainContainer}>
+          {/* 🔥 CORREÇÃO: Ícone vetorial no lugar do emoji para garantir alinhamento idêntico em qualquer tela */}
+          <View style={styles.iconCircle}>
+            <Icon name="tools" size={width < 400 ? 45 : 60} color="#FFD700" />
+          </View>
 
-      <Text style={styles.title}>Sistema em Atualização</Text>
+          <Text style={styles.title}>Sistema em Atualização</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.message}>
-          Estamos aprimorando nossas ferramentas para garantir que sua barbearia tenha a melhor gestão do mercado.
-        </Text>
-        <Text style={styles.highlight}>
-          Previsão de retorno: em alguns instantes.
-        </Text>
-      </View>
+          <View style={styles.card}>
+            <Text style={styles.message}>
+              Estamos aprimorando nossas ferramentas para garantir que sua barbearia tenha a melhor gestão do mercado.
+            </Text>
+            <Text style={styles.highlight}>
+              Previsão de retorno: em alguns instantes.
+            </Text>
+          </View>
 
-      <TouchableOpacity 
-        style={styles.button} 
-        onPress={() => navigation.replace('Login')}
-      >
-        <Text style={styles.buttonText}>Verificar Novamente</Text>
-      </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={() => navigation.replace('Login')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>Verificar Novamente</Text>
+          </TouchableOpacity>
+        </View>
 
-      <Text style={styles.footer}>Rafael Silva • Tecnologia para Barbearias</Text>
+        {/* 🔥 CORREÇÃO: Rodapé protegido pelo SafeAreaView para não sumir embaixo das barras de gestos nativas */}
+        <Text style={styles.footer}>Rafael Silva • Tecnologia para Barbearias</Text>
+        
+      </SafeAreaView>
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 30 },
+  container: { flex: 1 },
+  content: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    paddingHorizontal: 30 
+  },
+  mainContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
   iconCircle: { 
     width: width < 400 ? 90 : 120, 
     height: width < 400 ? 90 : 120, 
@@ -58,7 +81,6 @@ const styles = StyleSheet.create({
     borderWidth: 1, 
     borderColor: '#444' 
   },
-  icon: { fontSize: width < 400 ? 40 : 60 },
   title: { 
     fontSize: width < 400 ? 22 : isWeb ? 32 : 28, 
     fontWeight: 'bold', 
@@ -103,10 +125,10 @@ const styles = StyleSheet.create({
     fontSize: width < 400 ? 14 : isWeb ? 18 : 16 
   },
   footer: { 
-    position: 'absolute', 
-    bottom: 30, 
     fontSize: width < 400 ? 11 : 12, 
     color: '#475569', 
-    letterSpacing: 1 
+    letterSpacing: 1,
+    marginBottom: Platform.OS === 'ios' ? 10 : 20,
+    textAlign: 'center'
   }
 });

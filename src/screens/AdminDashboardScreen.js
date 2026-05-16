@@ -10,13 +10,14 @@ import {
   StatusBar, 
   Linking, 
   Dimensions, 
-  Platform 
+  Platform,
+  SafeAreaView
 } from 'react-native';
 import api from '../services/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
 export default function AdminDashboardScreen({ navigation }) {
@@ -48,17 +49,29 @@ export default function AdminDashboardScreen({ navigation }) {
     }
   };
 
-  const abrirWhatsapp = (email) => {
-    const mensagem = `Olá, estamos entrando em contato sobre sua conta no Barbearia App.`;
-    const url = `whatsapp://send?text=${encodeURIComponent(mensagem)}`;
+  const abrirWhatsapp = (telefone) => {
+    if (!telefone) {
+      Alert.alert('Aviso', 'Esta barbearia não possui telefone cadastrado.');
+      return;
+    }
+
+    const numeroLimpo = telefone.replace(/\D/g, '');
+    const mensagem = `Olá, estamos entrando em contato sobre sua conta no Barber Pro.`;
+    const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
     
-    Linking.canOpenURL(url).then(supported => {
-      if (supported) {
-        Linking.openURL(url);
-      } else {
-        Alert.alert('Erro', 'WhatsApp não está instalado ou não é suportado.');
-      }
-    });
+    if (isWeb) {
+      Linking.openURL(url);
+    } else {
+      Linking.canOpenURL(url).then(supported => {
+        if (supported) {
+          Linking.openURL(url);
+        } else {
+          Linking.openURL(url);
+        }
+      }).catch(() => {
+        Alert.alert('Erro', 'Não foi possível abrir o WhatsApp.');
+      });
+    }
   };
 
   return (
@@ -72,6 +85,7 @@ export default function AdminDashboardScreen({ navigation }) {
         </View>
 
         <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.replace('Login')}>
+          <Icon name="logout" size={16} color="#FFF" style={{ marginRight: isWeb ? 6 : 0 }} />
           <Text style={styles.logoutText}>Sair</Text>
         </TouchableOpacity>
       </View>
@@ -81,52 +95,62 @@ export default function AdminDashboardScreen({ navigation }) {
           <Text style={styles.emptyText}>Nenhuma barbearia encontrada.</Text>
         </View>
       ) : (
-        <FlatList
-          data={barber}
-          contentContainerStyle={styles.listContent}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <View style={styles.infoContainer}>
-                <Text style={styles.nome}>{item.nome}</Text>
-                
-                <View style={styles.row}>
-                  <Text style={styles.label}>Email: </Text>
-                  <Text style={styles.vencimento}>{item.email}</Text>
+        <SafeAreaView style={{ flex: 1 }}>
+          <FlatList
+            data={barber}
+            contentContainerStyle={styles.listContent}
+            keyExtractor={(item) => item.id.toString()}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <View style={styles.card}>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.nome}>{item.nome}</Text>
+                  
+                  <View style={styles.row}>
+                    <Text style={styles.label}>Email: </Text>
+                    <Text style={styles.vencimento}>{item.email}</Text>
+                  </View>
+
+                  {item.telefone && (
+                    <View style={styles.row}>
+                      <Text style={styles.label}>Tel: </Text>
+                      <Text style={styles.vencimento}>{item.telefone}</Text>
+                    </View>
+                  )}
+                  
+                  <View style={[styles.statusBadge, item.status === 'ATIVO' ? styles.badgeAtivo : styles.badgeSuspenso]}>
+                    <Text style={styles.statusText}>{item.status}</Text>
+                  </View>
                 </View>
-                
-                <View style={[styles.statusBadge, item.status === 'ATIVO' ? styles.badgeAtivo : styles.badgeSuspenso]}>
-                  <Text style={styles.statusText}>{item.status}</Text>
+
+                <View style={styles.divider} />
+
+                <View style={styles.acoesContainer}>
+                  <View style={styles.switchBox}>
+                    <Text style={styles.switchLabel}>
+                      {item.status === 'ATIVO' ? 'Acesso Ativo' : 'Acesso Cortado'}
+                    </Text>
+                    <Switch
+                      trackColor={{ false: '#334155', true: '#10B981' }}
+                      thumbColor={item.status === 'ATIVO' ? '#fff' : '#94A3B8'}
+                      value={item.status === 'ATIVO'}
+                      onValueChange={() => toggleStatus(item.id, item.status)}
+                    />
+                  </View>
+                  
+                  <TouchableOpacity 
+                    style={styles.zapButton} 
+                    onPress={() => abrirWhatsapp(item.telefone || '')}
+                    activeOpacity={0.7}
+                  >
+                    <Icon name="whatsapp" size={20} color="#000" style={{ marginRight: 6 }} />
+                    <Text style={styles.zapText}>Notificar</Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-
-              <View style={styles.divider} />
-
-              <View style={styles.acoesContainer}>
-                <View style={styles.switchBox}>
-                  <Text style={styles.switchLabel}>
-                    {item.status === 'ATIVO' ? 'Acesso Ativo' : 'Acesso Cortado'}
-                  </Text>
-                  <Switch
-                    trackColor={{ false: '#334155', true: '#10B981' }}
-                    thumbColor={item.status === 'ATIVO' ? '#fff' : '#94A3B8'}
-                    value={item.status === 'ATIVO'}
-                    onValueChange={() => toggleStatus(item.id, item.status)}
-                  />
-                </View>
-                
-                <TouchableOpacity 
-                  style={styles.zapButton} 
-                  onPress={() => abrirWhatsapp(item.email)}
-                  activeOpacity={0.7}
-                >
-                  <Icon name="whatsapp" size={20} color="#000" style={{ marginRight: 6 }} />
-                  <Text style={styles.zapText}>Notificar</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        />
+            )}
+          />
+        </SafeAreaView>
       )}
     </LinearGradient>
   );
@@ -137,7 +161,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerContainer: {
-    paddingTop: 60,
+    paddingTop: Platform.OS === 'ios' ? 50 : 40,
     paddingHorizontal: 20,
     paddingBottom: 25,
     backgroundColor: '#1E293B',
@@ -158,17 +182,22 @@ const styles = StyleSheet.create({
   },
   logoutBtn: {
     backgroundColor: '#EF4444',
-    paddingVertical: width < 400 ? 8 : 12,
+    paddingVertical: width < 400 ? 8 : 10,
     paddingHorizontal: 15,
     borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   logoutText: {
     color: '#FFF',
     fontWeight: 'bold',
-    fontSize: width < 400 ? 14 : isWeb ? 18 : 16,
+    fontSize: width < 400 ? 14 : isWeb ? 16 : 15,
   },
   listContent: {
     padding: 15,
+    maxWidth: 600,
+    width: '100%',
+    alignSelf: 'center'
   },
   card: {
     backgroundColor: '#1E293B',
@@ -190,7 +219,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   label: {
     color: '#94A3B8',
@@ -205,7 +234,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 6,
-    marginTop: 5,
+    marginTop: 8,
   },
   badgeAtivo: {
     backgroundColor: 'rgba(16, 185, 129, 0.2)',
@@ -240,7 +269,7 @@ const styles = StyleSheet.create({
   zapButton: {
     flexDirection: 'row',
     backgroundColor: '#FFD700',
-    paddingVertical: width < 400 ? 8 : 12,
+    paddingVertical: width < 400 ? 8 : 10,
     paddingHorizontal: 12,
     borderRadius: 10,
     alignItems: 'center',
@@ -248,7 +277,7 @@ const styles = StyleSheet.create({
   zapText: {
     color: '#000',
     fontWeight: '600',
-    fontSize: width < 400 ? 14 : isWeb ? 18 : 16,
+    fontSize: width < 400 ? 14 : isWeb ? 16 : 15,
   },
   emptyContainer: {
     flex: 1,

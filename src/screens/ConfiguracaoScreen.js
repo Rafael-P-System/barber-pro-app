@@ -7,12 +7,10 @@ import {
   Platform, 
   TouchableOpacity 
 } from 'react-native';
-import api from '../services/api';
-import logo from '../assets/logo.png';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
 export default function ConfiguracaoScreen() {
@@ -21,25 +19,33 @@ export default function ConfiguracaoScreen() {
       <View style={styles.card}>
         <Text style={styles.header}>Configurações</Text>
 
+        {/* SEÇÃO: CONTA */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Conta</Text>
-          <TouchableOpacity style={styles.item}>
+          
+          <TouchableOpacity style={styles.item} activeOpacity={0.7}>
             <Text style={styles.itemText}>Alterar Senha</Text>
             <Icon name="chevron-right" size={22} color="#FFD700" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.item}>
+          
+          {/* 🔥 ÚLTIMO ITEM: Ganha o estilo 'noBorder' para não quebrar o visual */}
+          <TouchableOpacity style={[styles.item, styles.noBorder]} activeOpacity={0.7}>
             <Text style={styles.itemText}>Excluir Conta</Text>
             <Icon name="chevron-right" size={22} color="#FFD700" />
           </TouchableOpacity>
         </View>
 
+        {/* SEÇÃO: SISTEMA */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Sistema</Text>
-          <TouchableOpacity style={styles.item}>
+          
+          <TouchableOpacity style={styles.item} activeOpacity={0.7}>
             <Text style={styles.itemText}>Notificações</Text>
             <Icon name="chevron-right" size={22} color="#FFD700" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.item}>
+          
+          {/* 🔥 ÚLTIMO ITEM: Sem borda inferior */}
+          <TouchableOpacity style={[styles.item, styles.noBorder]} activeOpacity={0.7}>
             <Text style={styles.itemText}>Tema</Text>
             <Icon name="chevron-right" size={22} color="#FFD700" />
           </TouchableOpacity>
@@ -92,6 +98,9 @@ const styles = StyleSheet.create({
     padding: width < 400 ? 12 : 15,
     borderBottomWidth: 0.5,
     borderBottomColor: '#444'
+  },
+  noBorder: {
+    borderBottomWidth: 0 // Remove a linha do último elemento para ficar limpo dentro do card
   },
   itemText: {
     color: '#FFF',

@@ -1,143 +1,154 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   View, 
   Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Alert, 
   StyleSheet, 
   Dimensions, 
-  Platform 
+  TouchableOpacity, 
+  Alert, 
+  Platform,
+  ScrollView,
+  SafeAreaView
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../services/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width, height } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
-export default function CadastroBarbeiro({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [mostrarSenha, setMostrarSenha] = useState(false);
-
-  const salvar = async () => {
-    if (!email || !senha) {
-      Alert.alert('Erro', 'Preencha todos os campos');
-      return;
-    }
-
-    try {
-      const novoBarbeiro = {
-        id: Date.now(),
-        email,
-        senha
-      };
-
-      await AsyncStorage.setItem('barbeiro', JSON.stringify(novoBarbeiro));
-      Alert.alert('Sucesso', 'Barbeiro cadastrado com sucesso!');
-      navigation.goBack();
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Erro', 'Não foi possível cadastrar o barbeiro.');
-    }
+export default function BarberScreen({ navigation }) {
+  const finalizarTurno = () => {
+    Alert.alert("Turno finalizado", "Você encerrou o expediente com sucesso.");
+    navigation.replace('Login');
   };
 
   return (
     <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
-      <Text style={styles.header}>Cadastro de Barbeiro</Text>
+      {/* SafeAreaView evita que o conteúdo morda a barra de status do celular */}
+      <SafeAreaView style={{ flex: 1 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
+          
+          <View style={styles.header}>
+            <Text style={styles.titulo}>Área do Barbeiro</Text>
 
-      <TextInput
-        placeholder="Email"
-        placeholderTextColor="#94A3B8"
-        onChangeText={setEmail}
-        value={email}
-        style={styles.input}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+            {/* Botão de logout modificado para um layout mais elegante */}
+            <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.replace('Login')}>
+              <Icon name="logout" size={18} color="#FFF" style={{ marginRight: 4 }} />
+              <Text style={styles.logoutText}>Sair</Text>
+            </TouchableOpacity>
+          </View>
 
-      {/* Campo de senha com ícone de olho */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          placeholder="Senha"
-          placeholderTextColor="#94A3B8"
-          secureTextEntry={!mostrarSenha}
-          onChangeText={setSenha}
-          value={senha}
-          style={styles.inputSenha}
-        />
-        <TouchableOpacity onPress={() => setMostrarSenha(!mostrarSenha)}>
-          <Icon 
-            name={mostrarSenha ? "eye-off-outline" : "eye-outline"} 
-            size={22} 
-            color="#FFD700" 
-          />
-        </TouchableOpacity>
-      </View>
+          <Text style={styles.subtitulo}>Resumo de Hoje</Text>
+          <View style={styles.row}>
+            <View style={styles.card}>
+              <Text style={styles.cardLabel}>Cortes</Text>
+              <Text style={styles.cardValue}>12</Text>
+            </View>
+            <View style={styles.card}>
+              <Text style={styles.cardLabel}>Barbas</Text>
+              <Text style={styles.cardValue}>8</Text>
+            </View>
+          </View>
 
-      <TouchableOpacity onPress={salvar} style={styles.button}>
-        <Text style={styles.buttonText}>Cadastrar</Text>
-      </TouchableOpacity>
+          <Text style={styles.subtitulo}>Agendamentos</Text>
+          
+          {/* Item de exemplo - Futuramente mapeado com os dados da API */}
+          <View style={styles.itemAgendamento}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Pedro Santos</Text>
+              <Text style={{ color: '#94A3B8', fontSize: 14 }}>Serviço: Corte tradicional</Text>
+            </View>
+            <TouchableOpacity style={styles.btnDelete} onPress={() => Alert.alert("Agendamento removido")}>
+              <Icon name="trash-can-outline" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.btnStatus} onPress={finalizarTurno}>
+            <Text style={styles.btnText}>Finalizar Turno</Text>
+          </TouchableOpacity>
+
+        </ScrollView>
+      </SafeAreaView>
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  container: { flex: 1 },
+  scrollContainer: { padding: 20, flexGrow: 1 },
   header: { 
-    color: '#FFD700', 
-    fontSize: width < 400 ? 22 : isWeb ? 32 : 28, 
-    fontWeight: 'bold', 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
     marginBottom: 20, 
-    textAlign: 'center' 
+    marginTop: Platform.OS === 'ios' ? 0 : 20 
   },
-  input: {
-    backgroundColor: '#1E293B',
-    color: '#fff',
-    paddingVertical: width < 400 ? 10 : 14,
-    paddingHorizontal: 12,
+  titulo: { 
+    color: '#FFD700', 
+    fontSize: width < 400 ? 20 : isWeb ? 28 : 24, 
+    fontWeight: 'bold' 
+  },
+  logoutBtn: { 
+    backgroundColor: '#EF4444', 
+    paddingVertical: width < 400 ? 6 : 8,
+    paddingHorizontal: width < 400 ? 10 : 12, 
     borderRadius: 8,
-    marginBottom: 12,
-    fontSize: width < 400 ? 14 : isWeb ? 18 : 16,
-    width: '100%',
-    height: isWeb ? 60 : (height * 0.065 > 55 ? 55 : height * 0.065)
-  },
-  inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1E293B',
-    borderRadius: 8,
-    marginBottom: 12,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: '#444',
-    width: '100%',
-    justifyContent: 'space-between'
+    alignItems: 'center'
   },
-  inputSenha: {
-    flex: 1,
-    color: '#fff',
-    fontSize: width < 400 ? 14 : isWeb ? 18 : 16,
-    height: isWeb ? 60 : (height * 0.065 > 55 ? 55 : height * 0.065),
-    marginRight: 8
+  logoutText: { 
+    color: '#FFF', 
+    fontWeight: 'bold', 
+    fontSize: width < 400 ? 14 : isWeb ? 16 : 15 
   },
-  button: {
-    backgroundColor: '#FFD700',
-    padding: width < 400 ? 12 : 15,
-    borderRadius: 8,
-    marginTop: 10,
-    width: '100%',
-    maxWidth: isWeb ? 500 : 400,
+  subtitulo: { 
+    color: '#FFF', 
+    fontSize: width < 400 ? 16 : isWeb ? 20 : 18, 
+    marginVertical: 15, 
+    fontWeight: 'bold' 
+  },
+  row: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', maxWidth: 500, alignSelf: 'center' },
+  card: { 
+    backgroundColor: '#1E293B', 
+    padding: width < 400 ? 12 : 15, 
+    borderRadius: 12, 
+    width: '48%'
+  },
+  cardLabel: { color: '#94A3B8', fontSize: width < 400 ? 12 : 14 },
+  cardValue: { color: '#FFF', fontSize: width < 400 ? 16 : 18, fontWeight: 'bold', marginTop: 4 },
+  btnStatus: { 
+    backgroundColor: '#FFD700', 
+    padding: width < 400 ? 12 : 15, 
+    borderRadius: 10, 
+    marginTop: 30, 
+    width: '100%', 
+    maxWidth: 500, 
+    alignSelf: 'center' 
+  },
+  btnText: { 
+    color: '#000', 
+    textAlign: 'center', 
+    fontWeight: 'bold', 
+    fontSize: width < 400 ? 14 : isWeb ? 18 : 16 
+  },
+  itemAgendamento: { 
+    backgroundColor: '#1E293B', 
+    padding: width < 400 ? 12 : 15, 
+    borderRadius: 10, 
+    marginBottom: 10, 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    width: '100%', 
+    maxWidth: 500, 
     alignSelf: 'center',
-    alignItems: 'center',
-    justifyContent: 'center'
+    borderLeftWidth: 4,
+    borderLeftColor: '#FFD700' // Detalhe dourado na lateral do agendamento
   },
-  buttonText: {
-    color: '#000',
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: width < 400 ? 14 : isWeb ? 18 : 16
+  btnDelete: { 
+    backgroundColor: '#EF4444', 
+    padding: width < 400 ? 8 : 10, 
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 });

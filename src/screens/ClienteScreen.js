@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-import axios from 'axios'; // Certifique-se de ter o axios instalado
+// 🔥 CORREÇÃO: Importando a SUA instância configurada do Axios (com a URL do Render e o Token)
+import api from '../services/api'; 
 
 const { width } = Dimensions.get('window');
 
@@ -9,12 +10,12 @@ export default function ClienteScreen({ navigation, route }) {
   // Pegando o nome do cliente que veio do Login (exemplo)
   const clienteNome = route.params?.nome || "Cliente"; 
 
-  // Função para simular ou realizar um agendamento rápido
+  // Função para realizar um agendamento rápido
   const realizarAgendamentoRapido = async () => {
     setLoading(true);
     try {
-      // AJUSTE: Enviando o JSON no formato que o Back-end espera
-      const response = await axios.post('http://SEU_IP:8080/api/agendamentos/agendar', {
+      // 🔥 CORREÇÃO: Usando 'api.post' (aponta para o Render) e deixando a rota relativa correta do Spring Boot
+      const response = await api.post('/agendamentos/agendar', {
         cliente: clienteNome,
         hora: "10:00", // Aqui você pegaria de um seletor de horários
         barbeiro: { id: 1 } // ID do barbeiro selecionado
@@ -27,9 +28,14 @@ export default function ClienteScreen({ navigation, route }) {
       }
 
     } catch (error) {
+      console.error(error);
       if (error.response && error.response.status === 503) {
-        // 🔥 TRAVA SaaS: Mensagem de manutenção para não constranger o barbeiro
+        // Trava SaaS: Mensagem de manutenção para não constranger o barbeiro
         Alert.alert("Aviso", "O sistema está em manutenção temporária. Tente novamente mais tarde.");
+      } else if (error.response && error.response.status === 403) {
+        // Caso o token JWT esteja inválido ou expirado
+        Alert.alert("Erro de Autenticação", "Sua sessão expirou. Por favor, faça login novamente.");
+        navigation.replace('Login');
       } else {
         Alert.alert("Erro", "Não foi possível realizar o agendamento.");
       }
@@ -56,7 +62,7 @@ export default function ClienteScreen({ navigation, route }) {
         
         <View style={styles.emptyState}>
           {loading ? (
-            <ActivityIndicator color="#0A84FF" />
+            <ActivityIndicator color="#FFD700" />
           ) : (
             <Text style={styles.emptyStateText}>Nenhum agendamento encontrado.</Text>
           )}

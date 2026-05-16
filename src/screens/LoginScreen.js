@@ -47,11 +47,11 @@ const LoginScreen = ({ navigation }) => {
       if (response.status === 200) {
         const token = response.data.token || response.data;
 
-        // 🔥 CORREÇÃO AQUI (WEB + MOBILE)
+        // 🔥 CHAVE CORRIGIDA: Agora bate com o interceptor do api.js
         if (Platform.OS === 'web') {
-          localStorage.setItem('jwtToken', token);
+          localStorage.setItem('@BarberPro:token', token);
         } else {
-          await AsyncStorage.setItem('jwtToken', token);
+          await AsyncStorage.setItem('@BarberPro:token', token);
         }
 
         // Navegação

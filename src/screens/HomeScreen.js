@@ -7,7 +7,8 @@ import {
   TouchableOpacity, 
   Image, 
   ScrollView, 
-  Platform 
+  Platform,
+  SafeAreaView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -70,112 +71,118 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
+      <SafeAreaView style={{ flex: 1 }}>
+        
+        {/* BOTÃO VOLTAR */}
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.btnVoltar}>
+          <Text style={{ color: '#FFD700', fontSize: 16, fontWeight: 'bold' }}>← Voltar</Text>
+        </TouchableOpacity>
 
-      {/* BOTÃO VOLTAR */}
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.btnVoltar}>
-        <Text style={{ color: '#FFD700', fontSize: 16 }}>← Voltar</Text>
-      </TouchableOpacity>
+        <Text style={styles.title}>Serviços disponíveis</Text>
 
-      <Text style={styles.title}>Serviços disponíveis</Text>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollServicos}>
-        {servicos.map((item) => (
-          <TouchableOpacity 
-            key={item.id}
-            style={[
-              styles.card, 
-              servicoSelecionado === item.id && styles.cardSelecionado
-            ]}
-            onPress={() => setServicoSelecionado(item.id)}
-          >
-            <Image source={require('../assets/logo.png')} style={styles.icon} />
-            <Text style={styles.cardText}>{item.nome}</Text>
-            <Text style={styles.cardPrice}>R$ {item.preco}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      <Text style={styles.label}>Horários para hoje:</Text>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollHorarios}>
-        {horarios.map((item) => (
-          <View key={item.id} style={styles.containerHorario}>
-
-            <TouchableOpacity 
-              disabled={item.ocupado && !item.meuAgendamento}
-              style={[
-                styles.btnHora,
-
-                // selecionado
-                horarioSelecionado?.id === item.id && styles.horarioSelecionado,
-
-                // ocupado
-                item.ocupado && !item.meuAgendamento && styles.btnOcupado,
-
-                // meu horário
-                item.meuAgendamento && styles.meuHorario
-              ]}
-              onPress={() => {
-                if (!item.ocupado) {
-                  setHorarioSelecionado(item);
-                }
-              }}
-            >
-              <Text style={[
-                styles.cardText,
-                item.ocupado && !item.meuAgendamento && { color: '#AAA' }
-              ]}>
-                {item.hora}
-              </Text>
-            </TouchableOpacity>
-
-            {item.meuAgendamento && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollServicos}>
+          {servicos.map((item) => {
+            const isSelected = servicoSelecionado === item.id;
+            return (
               <TouchableOpacity 
-                style={styles.btnCancelar}
-                onPress={() => cancelarMeuAgendamento(item.id)}
+                key={item.id}
+                style={[
+                  styles.card, 
+                  isSelected && styles.cardSelecionado
+                ]}
+                onPress={() => setServicoSelecionado(item.id)}
               >
-                <Text style={styles.btnCancelarText}>Cancelar</Text>
+                <Image source={require('../assets/logo.png')} style={styles.icon} />
+                {/* 🔥 CORREÇÃO: Texto fica preto se o card for selecionado (melhorando o contraste) */}
+                <Text style={[styles.cardText, isSelected && { color: '#000' }]}>{item.nome}</Text>
+                <Text style={[styles.cardPrice, isSelected && { color: '#333' }]}>R$ {item.preco}</Text>
               </TouchableOpacity>
-            )}
+            );
+          })}
+        </ScrollView>
 
-          </View>
-        ))}
-      </ScrollView>
+        <Text style={styles.label}>Horários para hoje:</Text>
 
-      <TouchableOpacity 
-        style={[
-          styles.btnSalvar, 
-          (!servicoSelecionado || !horarioSelecionado) && { opacity: 0.5 }
-        ]}
-        disabled={!servicoSelecionado || !horarioSelecionado}
-        onPress={() => navigation.navigate('Confirmacao', { 
-          servico: servicoSelecionado, 
-          horario: horarioSelecionado 
-        })}
-      >
-        <Text style={styles.btnText}>Confirmar Agendamento</Text>
-      </TouchableOpacity>
+        <View style={{ maxHeight: 120 }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollHorarios}>
+            {horarios.map((item) => {
+              const isHoraSelecionada = horarioSelecionado?.id === item.id;
+              return (
+                <View key={item.id} style={styles.containerHorario}>
 
+                  <TouchableOpacity 
+                    disabled={item.ocupado && !item.meuAgendamento}
+                    style={[
+                      styles.btnHora,
+                      isHoraSelecionada && styles.horarioSelecionado,
+                      item.ocupado && !item.meuAgendamento && styles.btnOcupado,
+                      item.meuAgendamento && styles.meuHorario
+                    ]}
+                    onPress={() => {
+                      if (!item.ocupado) {
+                        setHorarioSelecionado(item);
+                      }
+                    }}
+                  >
+                    {/* 🔥 CORREÇÃO: Texto do horário fica preto ao ser selecionado */}
+                    <Text style={[
+                      styles.cardText,
+                      isHoraSelecionada && { color: '#000' },
+                      item.ocupado && !item.meuAgendamento && { color: '#AAA' }
+                    ]}>
+                      {item.hora}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {item.meuAgendamento && (
+                    <TouchableOpacity 
+                      style={styles.btnCancelar}
+                      onPress={() => cancelarMeuAgendamento(item.id)}
+                    >
+                      <Text style={styles.btnCancelarText}>Cancelar</Text>
+                    </TouchableOpacity>
+                  )}
+
+                </View>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        <TouchableOpacity 
+          style={[
+            styles.btnSalvar, 
+            (!servicoSelecionado || !horarioSelecionado) && { opacity: 0.5 }
+          ]}
+          disabled={!servicoSelecionado || !horarioSelecionado}
+          onPress={() => navigation.navigate('Confirmacao', { 
+            servico: servicoSelecionado, 
+            horario: horarioSelecionado 
+          })}
+        >
+          <Text style={styles.btnText}>Confirmar Agendamento</Text>
+        </TouchableOpacity>
+
+      </SafeAreaView>
     </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
+  container: { flex: 1, paddingHorizontal: 20 },
 
   btnVoltar: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    zIndex: 10
+    marginTop: Platform.OS === 'ios' ? 0 : 15,
+    marginBottom: 10,
+    alignSelf: 'flex-start'
   },
 
   title: { 
     color: '#FFD700', 
     fontSize: width < 400 ? 22 : isWeb ? 32 : 28, 
-    marginTop: 60, 
     fontWeight: 'bold', 
-    textAlign: 'center' 
+    textAlign: 'center',
+    marginBottom: 10
   },
 
   label: { 
@@ -185,7 +192,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold' 
   },
 
-  scrollServicos: { maxHeight: 150, marginTop: 20 },
+  scrollServicos: { maxHeight: 140, marginTop: 10 },
 
   card: { 
     backgroundColor: '#1E293B', 
@@ -205,7 +212,7 @@ const styles = StyleSheet.create({
 
   cardPrice: { color: '#94A3B8', marginTop: 4 },
 
-  scrollHorarios: { marginTop: 15, maxHeight: 120 },
+  scrollHorarios: { marginTop: 15 },
 
   containerHorario: { alignItems: 'center', marginRight: 15 },
 
@@ -250,7 +257,7 @@ const styles = StyleSheet.create({
     padding: 18, 
     borderRadius: 12, 
     marginTop: 'auto', 
-    marginBottom: 20 
+    marginBottom: Platform.OS === 'ios' ? 0 : 20 
   },
 
   btnText: { 
