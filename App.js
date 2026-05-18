@@ -1,12 +1,12 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-//  Caminho corrigido para a sua pasta real de rotas
-import Routes from './src/routes'; 
+// 🧭 Importando a LoginScreen direto da pasta correta que vimos no seu print
+import LoginScreen from './src/screens/LoginScreen'; 
 
 export default function App() {
   return (
     <NavigationContainer>
-      <Routes />
+      <LoginScreen />
     </NavigationContainer>
   );
 }
