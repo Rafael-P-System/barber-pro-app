@@ -9,7 +9,7 @@ import CadastroBarbeiroScreen from '../screens/CadastroBarbeiroScreen';
 import ClienteScreen from '../screens/ClienteScreen';
 import HomeScreen from '../screens/HomeScreen';
 import ConfirmacaoScreen from '../screens/ConfirmacaoScreen';
-import BarberScreen from '../screens/BarberScreen'; // 🔥 Alinhado com o padrão de nome de arquivo
+import BarbeiroScreen from '../screens/BarbeiroScreen'; // 🔥 Alinhado com o padrão de nome de arquivo
 import AdminDashboardScreen from '../screens/AdminDashboardScreen';
 import MaintenanceScreen from '../screens/MaintenanceScreen';
 import ConfiguracaoScreen from '../screens/ConfiguracaoScreen';
@@ -29,7 +29,7 @@ export default function Routes() {
       <Stack.Screen name="Cliente" component={ClienteScreen} />
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="Confirmacao" component={ConfirmacaoScreen} />
-      <Stack.Screen name="Barber" component={BarberScreen} />
+      <Stack.Screen name="Barbeiro" component={BarbeiroScreen} />
       <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
       <Stack.Screen name="Maintenance" component={MaintenanceScreen} />
       <Stack.Screen name="Configuracao" component={ConfiguracaoScreen} />

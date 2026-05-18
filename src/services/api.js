@@ -1,15 +1,24 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Para salvar o token no celular
+import { Platform } from 'react-native';
 
 const api = axios.create({
-  // O Expo buscará o IP que você configurou no arquivo .env
-  baseURL: process.env.EXPO_PUBLIC_API_URL, 
+  baseURL: 'https://barbearia-api-swti.onrender.com', 
+  // 🔥 AUMENTADO: 90 segundos de tolerância para dar tempo da máquina do Render ligar
+  timeout: 90000, 
 });
 
-// AJUSTE DE SEGURANÇA: Injeta o Token em cada chamada automaticamente
+// Ajuste de segurança para injetar o Token automaticamente
 api.interceptors.request.use(async (config) => {
   try {
-    const token = await AsyncStorage.getItem('@BarberPro:token');
+    let token = null;
+
+    if (Platform.OS === 'web') {
+      token = localStorage.getItem('@BarberPro:token');
+    } else {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      token = await AsyncStorage.getItem('@BarberPro:token');
+    }
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

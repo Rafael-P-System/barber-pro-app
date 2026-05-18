@@ -28,8 +28,13 @@ const LoginScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
 
   const realizarLogin = async (tipo) => {
+    // ⚠️ Validação com alertas compatíveis com Web e Mobile
     if (!email || !senha) {
-      Alert.alert('Erro', 'Preencha todos os campos');
+      if (Platform.OS === 'web') {
+        window.alert('Preencha todos os campos');
+      } else {
+        Alert.alert('Erro', 'Preencha todos os campos');
+      }
       return;
     }
 
@@ -47,16 +52,20 @@ const LoginScreen = ({ navigation }) => {
       if (response.status === 200) {
         const token = response.data.token || response.data;
 
-        // 🔥 CHAVE CORRIGIDA: Agora bate com o interceptor do api.js
+        // 🔥 Gravação do Token corrigida e segura para Web/Mobile
         if (Platform.OS === 'web') {
           localStorage.setItem('@BarberPro:token', token);
         } else {
           await AsyncStorage.setItem('@BarberPro:token', token);
         }
 
-        // Navegação
+        // 🔄 Redirecionamentos de rota pós-login
         if (tipo === 'admin') {
-          Alert.alert("Bem-vindo, Rafael!", "Painel de Gestão liberado.");
+          if (Platform.OS === 'web') {
+            window.alert("Bem-vindo, Rafael! Painel de Gestão liberado.");
+          } else {
+            Alert.alert("Bem-vindo, Rafael!", "Painel de Gestão liberado.");
+          }
           navigation.replace('AdminDashboard');
         } else if (tipo === 'barbeiro') {
           navigation.replace('Barbeiro'); 
@@ -69,7 +78,12 @@ const LoginScreen = ({ navigation }) => {
       const msg = error.response?.status === 401 
         ? "E-mail ou senha incorretos." 
         : "Erro de conexão. Verifique se o servidor Java está rodando.";
-      Alert.alert("Erro", msg);
+      
+      if (Platform.OS === 'web') {
+        window.alert(msg);
+      } else {
+        Alert.alert("Erro", msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -91,6 +105,7 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.title}>Barber Pro</Text>
             <Text style={styles.subtitle}>Sistema de Gestão Master</Text>
 
+            {/* Input de E-mail */}
             <View style={styles.inputContainer}>
               <Icon name="email-outline" size={22} color="#FFD700" style={styles.icon}/>
               <TextInput 
@@ -104,6 +119,7 @@ const LoginScreen = ({ navigation }) => {
               />
             </View>
 
+            {/* Input de Senha */}
             <View style={styles.inputContainer}>
               <Icon name="lock-outline" size={22} color="#FFD700" style={styles.icon}/>
               <TextInput 
@@ -119,6 +135,7 @@ const LoginScreen = ({ navigation }) => {
               </TouchableOpacity>
             </View>
 
+            {/* Botões de Ação */}
             {loading ? (
               <ActivityIndicator size="large" color="#FFD700" style={{ marginVertical: 20 }} />
             ) : (
@@ -201,7 +218,7 @@ const styles = StyleSheet.create({
   input: { 
     flex: 1,
     height: 55, 
-    color: '#FFF', 
+    color: '#FFFFFF', // 🔥 FIX: Texto agora é BRANCO (visível no fundo escuro)
     fontSize: isWeb ? 18 : 16,
     marginRight: 8
   },

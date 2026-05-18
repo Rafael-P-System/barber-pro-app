@@ -106,5 +106,5 @@ const styles = StyleSheet.create({
   emptyState: { padding: 20, alignItems: 'center' },
   emptyStateText: { color: '#64748B', textAlign: 'center', fontSize: width < 400 ? 12 : 14 },
   servicesBtn: { marginTop: 20, backgroundColor: '#0A84FF', padding: 15, borderRadius: 10, alignItems: 'center' },
-  servicesText: { color: '#fff', fontWeight: 'bold', fontSize: width < 400 ? 14 : 16 }
+  servicesText: { color: '#d9d0d0', fontWeight: 'bold', fontSize: width < 400 ? 14 : 16 }
 });

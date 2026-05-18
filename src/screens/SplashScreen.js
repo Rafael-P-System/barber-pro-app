@@ -1,83 +1,111 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, Dimensions, Easing, Platform, StyleSheet } from 'react-native';
-
-const { width } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
+import { StyleSheet, View, Text, Animated, Platform } from 'react-native';
 
 export default function SplashScreen({ navigation }) {
-  const floatAnim = useRef(new Animated.Value(0)).current;
+  const animacaoFlutuar = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // 1. Float Animation (Infinite Loop) - Starts instantly
+    // Loop infinito da animação de flutuar
     Animated.loop(
       Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: -15, // Smooth floating upwards
-          duration: 2000,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: !isWeb,
+        Animated.timing(animacaoFlutuar, {
+          toValue: -15, 
+          duration: 1500,
+          useNativeDriver: true,
         }),
-        Animated.timing(floatAnim, {
-          toValue: 0, // Returns to original position
-          duration: 2000,
-          easing: Easing.inOut(Easing.sin),
-          useNativeDriver: !isWeb,
+        Animated.timing(animacaoFlutuar, {
+          toValue: 0, 
+          duration: 1500,
+          useNativeDriver: true,
         }),
       ])
     ).start();
 
-    // 2. Redirect to Login after 4 seconds
+    // Redirecionamento seguro após 3.5 segundos
     const timer = setTimeout(() => {
-      navigation.replace('Login');
-    }, 4000);
+      if (navigation && typeof navigation.navigate === 'function') {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }
+    }, 3500);
 
     return () => clearTimeout(timer);
-  }, [navigation, floatAnim]);
-
-  // Responsiveness
-  const logoSize = width < 400 ? 120 : 180;
-  const logoRadius = logoSize / 2;
+  }, [animacaoFlutuar, navigation]);
 
   return (
-    <View style={styles.container}>
-      
-      {/* 🚀 FIXED: Fade-in animation removed. The image renders instantly along with the screen. */}
-      <Animated.Image
-        source={require('../assets/logo.png')}
-        style={[
-          styles.logo,
-          {
-            width: logoSize,
-            height: logoSize,
-            borderRadius: logoRadius,
-            transform: [{ translateY: floatAnim }], // Only movement is applied
-          }
-        ]}
-        resizeMode="cover"
-      />
-      
-      <Text style={[styles.title, { fontSize: width < 400 ? 20 : 28 }]}>
-        RAEL BARBEARIA
-      </Text>
+    <View style={styles.containerTelaToda}>
+      <View style={styles.conteudoCentral}>
+        
+        {/* Container da Imagem com o efeito de flutuar */}
+        <Animated.View style={[
+          styles.containerImagem, 
+          { transform: [{ translateY: animacaoFlutuar }] }
+        ]}>
+          <Animated.Image
+            source={require('../assets/logo.png')} 
+            style={styles.logoRedonda}
+            resizeMode="cover"
+          />
+        </Animated.View>
+
+        {/* Texto do seu ecossistema */}
+        <Text style={styles.tituloBarbearia}>Naldo BARBEARIA</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  containerTelaToda: {
     flex: 1,
-    backgroundColor: '#0e7d8b', // Brand teal color
+    width: '100%',
+    // O segredo para a Web: força ocupar 100% da altura visível da página dinamicamente
+    ...Platform.select({
+      web: {
+        height: '100vh',
+        minHeight: '100vh',
+      },
+      default: {
+        flex: 1,
+      }
+    }),
+    backgroundColor: '#117986', 
     justifyContent: 'center',
     alignItems: 'center',
   },
-  logo: {
-    marginBottom: 20,
-    backgroundColor: '#fff', // White background behind the logo circle
-    opacity: 1, // Fixed at 1, ensuring instant visibility
+  conteudoCentral: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  title: {
+  containerImagem: {
+    width: 160,
+    height: 160,
+    borderRadius: 80, 
+    backgroundColor: '#050c12', 
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 8,
+    marginBottom: 25,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  logoRedonda: {
+    width: 154,
+    height: 154,
+    borderRadius: 77, 
+  },
+  tituloBarbearia: {
+    color: '#FFFFFF',
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#fff',
+    letterSpacing: 1.2,
     textAlign: 'center',
-  }
+    marginTop: 10,
+  },
 });

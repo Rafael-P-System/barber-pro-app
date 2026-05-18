@@ -26,25 +26,42 @@ export default function CadastroScreen({ navigation }) {
 
   const salvarCadastro = async () => {
     if (!nome || !email || !senha) {
-      Alert.alert('Erro', 'Preencha todos os campos');
+      if (Platform.OS === 'web') {
+        window.alert('Preencha todos os campos');
+      } else {
+        Alert.alert('Erro', 'Preencha todos os campos');
+      }
       return;
     }
     try {
-      // Conexão com o backend oficial no Render
-      const response = await api.post('/clientes/cadastro', { nome, email, senha });
+      // 🔥 FIX: Rota atualizada com /api para casar perfeitamente com o seu backend Java
+      const response = await api.post('/api/clientes/cadastro', { nome, email, senha });
       
       if (response.status === 200 || response.status === 201) {
-        Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
+        if (Platform.OS === 'web') {
+          window.alert('Cadastro realizado com sucesso!');
+        } else {
+          Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
+        }
         navigation.replace('Login');
       } else {
-        Alert.alert('Erro', 'Não foi possível realizar o cadastro.');
+        if (Platform.OS === 'web') {
+          window.alert('Não foi possível realizar o cadastro.');
+        } else {
+          Alert.alert('Erro', 'Não foi possível realizar o cadastro.');
+        }
       }
     } catch (error) {
       console.error(error);
       const msg = error.response?.status === 400 
         ? "E-mail já cadastrado." 
         : "Erro de conexão. Verifique se o servidor Java está rodando.";
-      Alert.alert('Erro', msg);
+      
+      if (Platform.OS === 'web') {
+        window.alert(msg);
+      } else {
+        Alert.alert('Erro', msg);
+      }
     }
   };
 
@@ -148,19 +165,19 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#333',
+    backgroundColor: '#383535',
     borderRadius: 10,
     marginBottom: 12,
     paddingHorizontal: 12,
     width: '100%',
     borderWidth: 1,
-    borderColor: '#444',
+    borderColor: '#ece2e2',
     justifyContent: 'space-between'
   },
   icon: { marginRight: 8 },
   inputField: {
     flex: 1,
-    color: '#FFF',
+    color: '#ede5e5',
     fontSize: width < 400 ? 14 : isWeb ? 18 : 16,
     height: isWeb ? 60 : (height * 0.065 > 55 ? 55 : height * 0.065),
   },
@@ -181,7 +198,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   buttonText: {
-    color: '#000',
+    color: '#000000', // 🔥 FIX: Texto em preto para dar um excelente contraste no botão dourado
     fontWeight: 'bold',
     fontSize: width < 400 ? 14 : isWeb ? 18 : 16
   },
