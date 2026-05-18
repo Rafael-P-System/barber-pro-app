@@ -51,7 +51,7 @@ export default function SplashScreen({ navigation }) {
         </Animated.View>
 
         {/* Texto do seu ecossistema */}
-        <Text style={styles.tituloBarbearia}>Naldo BARBEARIA</Text>
+        <Text style={styles.tituloBarbearia}>NALDO BARBEARIA</Text>
       </View>
     </View>
   );
