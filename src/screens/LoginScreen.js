@@ -40,9 +40,8 @@ const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      const endpoint = tipo === 'cliente' ? '/clientes/login' 
-                      : tipo === 'barbeiro' ? '/barbeiro/login' 
-                      : '/admin/login';
+      // 🎯 CORREÇÃO: Encaminha a requisição diretamente para a rota existente no Back-end
+      const endpoint = '/admin/login';
 
       const response = await api.post(endpoint, { 
         email: email, 
@@ -59,7 +58,7 @@ const LoginScreen = ({ navigation }) => {
           await AsyncStorage.setItem('@BarberPro:token', token);
         }
 
-        // 🔄 Redirecionamentos de rota pós-login
+        // 🔄 Redirecionamentos de rota pós-login baseados no botão clicado
         if (tipo === 'admin') {
           if (Platform.OS === 'web') {
             window.alert("Bem-vindo, Rafael! Painel de Gestão liberado.");
@@ -77,6 +76,8 @@ const LoginScreen = ({ navigation }) => {
       console.error(error);
       const msg = error.response?.status === 401 
         ? "E-mail ou senha incorretos." 
+        : error.response?.status === 404
+        ? "Usuário não encontrado no banco de dados."
         : "Erro de conexão. Verifique se o servidor Java está rodando.";
       
       if (Platform.OS === 'web') {
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
   input: { 
     flex: 1,
     height: 55, 
-    color: '#FFFFFF', // 🔥 FIX: Texto agora é BRANCO (visível no fundo escuro)
+    color: '#FFFFFF', 
     fontSize: isWeb ? 18 : 16,
     marginRight: 8
   },
