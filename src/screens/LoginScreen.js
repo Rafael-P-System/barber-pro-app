@@ -40,7 +40,7 @@ const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      // 🎯 CORREÇÃO: Encaminha a requisição diretamente para a rota existente no Back-end
+      // 🎯 Encaminha a requisição diretamente para a rota existente no Back-end
       const endpoint = '/admin/login';
 
       const response = await api.post(endpoint, { 
@@ -49,7 +49,11 @@ const LoginScreen = ({ navigation }) => {
       });
 
       if (response.status === 200) {
-        const token = response.data.token || response.data;
+        // 🛡️ CORREÇÃO DE SEGURANÇA: Evita o erro de 'undefined' buscando o token de forma segura
+        let tokenBruto = response.data?.token || response.data;
+        
+        // Trata o token como string e limpa aspas extras para não quebrar em operações futuras do app
+        let token = typeof tokenBruto === 'string' ? tokenBruto.replace(/"/g, '') : String(tokenBruto);
 
         // 🔥 Gravação do Token corrigida e segura para Web/Mobile
         if (Platform.OS === 'web') {
