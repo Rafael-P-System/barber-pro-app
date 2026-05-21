@@ -19,7 +19,8 @@ const isWeb = Platform.OS === 'web';
 export default function BarberScreen({ navigation }) {
   const finalizarTurno = () => {
     Alert.alert("Turno finalizado", "Você encerrou o expediente com sucesso.");
-    navigation.replace('Login');
+    // 🔥 CORREÇÃO: Mudado de replace para navigate para evitar travamentos
+    navigation.navigate('Login');
   };
 
   return (
@@ -31,8 +32,8 @@ export default function BarberScreen({ navigation }) {
           <View style={styles.header}>
             <Text style={styles.titulo}>Área do Barbeiro</Text>
 
-            {/* Botão de logout modificado para um layout mais elegante */}
-            <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.replace('Login')}>
+            {/* 🔥 CORREÇÃO: Mudado de replace para navigate no botão Sair */}
+            <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.navigate('Login')}>
               <Icon name="logout" size={18} color="#FFF" style={{ marginRight: 4 }} />
               <Text style={styles.logoutText}>Sair</Text>
             </TouchableOpacity>
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
     maxWidth: 500, 
     alignSelf: 'center',
     borderLeftWidth: 4,
-    borderLeftColor: '#FFD700' // Detalhe dourado na lateral do agendamento
+    borderLeftColor: '#FFD700'
   },
   btnDelete: { 
     backgroundColor: '#EF4444', 

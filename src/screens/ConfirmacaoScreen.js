@@ -103,8 +103,9 @@ export default function ConfirmacaoScreen({ route, navigation }) {
           </TouchableOpacity>
         )}
 
+        {/* 🔥 CORREÇÃO: Alterado de replace para navigate para manter a estabilidade da pilha do React Navigation */}
         <TouchableOpacity 
-          onPress={() => navigation.replace('Cliente')} 
+          onPress={() => navigation.navigate('Cliente')} 
           style={styles.btnVoltar}
           disabled={loading}
         >

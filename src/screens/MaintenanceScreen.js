@@ -23,7 +23,7 @@ export default function MaintenanceScreen({ navigation }) {
       <SafeAreaView style={styles.content}>
         
         <View style={styles.mainContainer}>
-          {/* 🔥 CORREÇÃO: Ícone vetorial no lugar do emoji para garantir alinhamento idêntico em qualquer tela */}
+          {/* Ícone vetorial no lugar do emoji para garantir alinhamento idêntico em qualquer tela */}
           <View style={styles.iconCircle}>
             <Icon name="tools" size={width < 400 ? 45 : 60} color="#FFD700" />
           </View>
@@ -39,16 +39,17 @@ export default function MaintenanceScreen({ navigation }) {
             </Text>
           </View>
 
+          {/* 🔥 CORREÇÃO: Alterado de replace para navigate para manter a estabilidade do app */}
           <TouchableOpacity 
             style={styles.button} 
-            onPress={() => navigation.replace('Login')}
+            onPress={() => navigation.navigate('Login')}
             activeOpacity={0.8}
           >
             <Text style={styles.buttonText}>Verificar Novamente</Text>
           </TouchableOpacity>
         </View>
 
-        {/* 🔥 CORREÇÃO: Rodapé protegido pelo SafeAreaView para não sumir embaixo das barras de gestos nativas */}
+        {/* Rodapé protegido pelo SafeAreaView para não sumir embaixo das barras de gestos nativas */}
         <Text style={styles.footer}>Rafael Silva • Tecnologia para Barbearias</Text>
         
       </SafeAreaView>

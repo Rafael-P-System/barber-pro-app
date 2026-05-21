@@ -34,7 +34,7 @@ export default function CadastroScreen({ navigation }) {
       return;
     }
     try {
-      // 🔥 FIX: Rota atualizada com /api para casar perfeitamente com o seu backend Java
+      // 🔥 Rota atualizada com /api para casar perfeitamente com o seu backend Java
       const response = await api.post('/api/clientes/cadastro', { nome, email, senha });
       
       if (response.status === 200 || response.status === 201) {
@@ -43,7 +43,8 @@ export default function CadastroScreen({ navigation }) {
         } else {
           Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
         }
-        navigation.replace('Login');
+        // 🔥 CORREÇÃO: Alterado de replace para navigate
+        navigation.navigate('Login');
       } else {
         if (Platform.OS === 'web') {
           window.alert('Não foi possível realizar o cadastro.');
@@ -124,7 +125,8 @@ export default function CadastroScreen({ navigation }) {
               <Text style={styles.buttonText}>Salvar</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.replace('Login')}>
+            {/* 🔥 CORREÇÃO: Alterado de replace para navigate no botão de voltar */}
+            <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
               <Text style={styles.backButtonText}>Voltar ao Login</Text>
             </TouchableOpacity>
           </View>
@@ -198,7 +200,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   buttonText: {
-    color: '#000000', // 🔥 FIX: Texto em preto para dar um excelente contraste no botão dourado
+    color: '#000000',
     fontWeight: 'bold',
     fontSize: width < 400 ? 14 : isWeb ? 18 : 16
   },

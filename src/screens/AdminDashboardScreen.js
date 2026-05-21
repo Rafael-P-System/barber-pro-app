@@ -55,7 +55,8 @@ export default function AdminDashboardScreen({ navigation }) {
       return;
     }
 
-    const numeroLimpo = telefone.replace(/\D/g, '');
+    // 🔥 BLINDAGEM PREVENTIVA: Adicionado '?.' para garantir que se o telefone não for string pura, o app não quebre
+    const numeroLimpo = telefone?.replace(/\D/g, '') || '';
     const mensagem = `Olá, estamos entrando em contato sobre sua conta no Barber Pro.`;
     const url = `https://wa.me/${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
     
@@ -84,7 +85,8 @@ export default function AdminDashboardScreen({ navigation }) {
           <Text style={styles.headerSubtitle}>Controle de Clientes SaaS</Text>
         </View>
 
-        <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.replace('Login')}>
+        {/* 🔥 CORREÇÃO: Alterado de replace para navigate no botão de sair do admin */}
+        <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.navigate('Login')}>
           <Icon name="logout" size={16} color="#FFF" style={{ marginRight: isWeb ? 6 : 0 }} />
           <Text style={styles.logoutText}>Sair</Text>
         </TouchableOpacity>

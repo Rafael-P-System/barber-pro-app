@@ -13,11 +13,26 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
-export default function ConfiguracaoScreen() {
+// 🔥 ALTERAÇÃO: Adicionado o { navigation } para permitir voltar para as telas anteriores
+export default function ConfiguracaoScreen({ navigation }) {
   return (
     <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
       <View style={styles.card}>
-        <Text style={styles.header}>Configurações</Text>
+        
+        {/* HEADER: Agora com um botão de voltar sutil para não prender o usuário */}
+        <View style={styles.headerContainer}>
+          {navigation?.canGoBack() && (
+            <TouchableOpacity 
+              style={styles.backArrow} 
+              onPress={() => navigation.goBack()}
+            >
+              <Icon name="arrow-left" size={24} color="#FFD700" />
+            </TouchableOpacity>
+          )}
+          <Text style={styles.header}>Configurações</Text>
+          {/* View fantasma apenas para centralizar o texto quando a seta existir */}
+          {navigation?.canGoBack() && <View style={{ width: 24 }} />}
+        </View>
 
         {/* SEÇÃO: CONTA */}
         <View style={styles.section}>
@@ -28,7 +43,7 @@ export default function ConfiguracaoScreen() {
             <Icon name="chevron-right" size={22} color="#FFD700" />
           </TouchableOpacity>
           
-          {/* 🔥 ÚLTIMO ITEM: Ganha o estilo 'noBorder' para não quebrar o visual */}
+          {/* ÚLTIMO ITEM: Ganha o estilo 'noBorder' para não quebrar o visual */}
           <TouchableOpacity style={[styles.item, styles.noBorder]} activeOpacity={0.7}>
             <Text style={styles.itemText}>Excluir Conta</Text>
             <Icon name="chevron-right" size={22} color="#FFD700" />
@@ -44,7 +59,7 @@ export default function ConfiguracaoScreen() {
             <Icon name="chevron-right" size={22} color="#FFD700" />
           </TouchableOpacity>
           
-          {/* 🔥 ÚLTIMO ITEM: Sem borda inferior */}
+          {/* ÚLTIMO ITEM: Sem borda inferior */}
           <TouchableOpacity style={[styles.item, styles.noBorder]} activeOpacity={0.7}>
             <Text style={styles.itemText}>Tema</Text>
             <Icon name="chevron-right" size={22} color="#FFD700" />
@@ -66,12 +81,23 @@ const styles = StyleSheet.create({
     width: isWeb ? (width > 800 ? 500 : 420) : width * 0.9,
     alignItems: 'center'
   },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    marginBottom: 30,
+    marginTop: 10,
+  },
+  backArrow: {
+    position: 'absolute',
+    left: 0,
+    padding: 5,
+  },
   header: {
     color: '#FFD700',
     fontSize: width < 400 ? 22 : isWeb ? 32 : 28,
     fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 30,
     textAlign: 'center'
   },
   section: {
@@ -100,7 +126,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#444'
   },
   noBorder: {
-    borderBottomWidth: 0 // Remove a linha do último elemento para ficar limpo dentro do card
+    borderBottomWidth: 0
   },
   itemText: {
     color: '#FFF',

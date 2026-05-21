@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
-// 🔥 CORREÇÃO: Importando a SUA instância configurada do Axios (com a URL do Render e o Token)
+// 🔥 Importando a sua instância configurada do Axios (com a URL do Render e o Token)
 import api from '../services/api'; 
 
 const { width } = Dimensions.get('window');
@@ -14,7 +14,7 @@ export default function ClienteScreen({ navigation, route }) {
   const realizarAgendamentoRapido = async () => {
     setLoading(true);
     try {
-      // 🔥 CORREÇÃO: Usando 'api.post' (aponta para o Render) e deixando a rota relativa correta do Spring Boot
+      // 🔥 Usando 'api.post' (aponta para o Render) e deixando a rota relativa correta do Spring Boot
       const response = await api.post('/agendamentos/agendar', {
         cliente: clienteNome,
         hora: "10:00", // Aqui você pegaria de um seletor de horários
@@ -35,7 +35,8 @@ export default function ClienteScreen({ navigation, route }) {
       } else if (error.response && error.response.status === 403) {
         // Caso o token JWT esteja inválido ou expirado
         Alert.alert("Erro de Autenticação", "Sua sessão expirou. Por favor, faça login novamente.");
-        navigation.replace('Login');
+        // 🔥 CORREÇÃO: Alterado de replace para navigate para evitar o crash de undefined
+        navigation.navigate('Login');
       } else {
         Alert.alert("Erro", "Não foi possível realizar o agendamento.");
       }
@@ -52,7 +53,8 @@ export default function ClienteScreen({ navigation, route }) {
           <Text style={styles.title}>Área do Cliente</Text>
         </View>
 
-        <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.replace('Login')}>
+        {/* 🔥 CORREÇÃO: Alterado de replace para navigate no botão de Sair */}
+        <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.navigate('Login')}>
           <Text style={styles.logoutText}>Sair</Text>
         </TouchableOpacity>
       </View>
