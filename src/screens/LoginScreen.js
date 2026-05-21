@@ -27,81 +27,31 @@ const LoginScreen = ({ navigation }) => {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const realizarLogin = async (tipo) => {
+  const realizarLogin = async (tipoBotaoClicado) => {
     if (!email || !senha) {
-      if (Platform.OS === 'web') {
-        window.alert('Preencha todos os campos');
-      } else {
-        Alert.alert('Erro', 'Preencha todos os campos');
-      }
+      Alert.alert('Erro', 'Preencha todos os campos');
       return;
     }
 
     setLoading(true);
     try {
-      const endpoint = '/admin/login';
-
-      const response = await api.post(endpoint, { 
-        email: email, 
-        senha: senha 
-      });
+      const endpoint = '/api/clientes/login'; 
+      const response = await api.post(endpoint, { email, senha });
 
       if (response.status === 200) {
-        let tokenBruto = response.data?.token;
-
-        if (!tokenBruto && typeof response.data === 'string') {
-          tokenBruto = response.data;
-        }
-
-        // 🚨 CORREÇÃO CRUCIAL: Evita que o .replace() de String rode em algo nulo/undefined
-        if (!tokenBruto || tokenBruto === 'undefined') {
-          throw new Error("Token não recebido do servidor.");
-        }
+        let tokenBruto = response.data?.token || response.data;
+        if (!tokenBruto || tokenBruto === 'undefined') throw new Error("Token não recebido.");
         
-        // Agora é 100% seguro rodar a limpeza de aspas na String do token
         let token = String(tokenBruto).replace(/"/g, '');
+        if (Platform.OS === 'web') localStorage.setItem('@BarberPro:token', token);
+        else await AsyncStorage.setItem('@BarberPro:token', token);
 
-        if (Platform.OS === 'web') {
-          localStorage.setItem('@BarberPro:token', token);
-        } else {
-          await AsyncStorage.setItem('@BarberPro:token', token);
-        }
-
-        // 🔄 CORREÇÃO DE ROTAS: Trocado replace por navigate para evitar quebras de pilha
-        if (tipo === 'admin') {
-          if (Platform.OS === 'web') {
-            window.alert("Bem-vindo! Painel de Gestão liberado.");
-          } else {
-            Alert.alert("Bem-vindo!", "Painel de Gestão liberado.");
-          }
-          navigation.navigate('AdminDashboard');
-        } else if (tipo === 'barbeiro') {
-          navigation.navigate('Barbeiro'); 
-        } else {
-          navigation.navigate('Cliente');
-        }
+        if (tipoBotaoClicado === 'admin') navigation.navigate('AdminDashboard');
+        else if (tipoBotaoClicado === 'barbeiro') navigation.navigate('Barbeiro');
+        else navigation.navigate('Cliente');
       }
     } catch (error) {
-      console.error(error);
-      
-      if (error.message === "Token não recebido do servidor.") {
-        const msgToken = "Erro no formato da resposta do servidor (Token Ausente).";
-        if (Platform.OS === 'web') window.alert(msgToken);
-        else Alert.alert("Erro", msgToken);
-        return;
-      }
-
-      const msg = error.response?.status === 401 
-        ? "E-mail ou senha incorretos." 
-        : error.response?.status === 404
-        ? "Usuário não encontrado no banco de dados."
-        : "Erro de conexão. Verifique se o servidor Java está rodando ou acordando.";
-      
-      if (Platform.OS === 'web') {
-        window.alert(msg);
-      } else {
-        Alert.alert("Erro", msg);
-      }
+      Alert.alert("Erro", "E-mail ou senha incorretos.");
     } finally {
       setLoading(false);
     }
@@ -113,47 +63,25 @@ const LoginScreen = ({ navigation }) => {
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.card}>
             <View style={styles.logoContainer}>
-              <Image 
-                source={require('../assets/logo.png')} 
-                style={styles.logo}
-                resizeMode="cover"
-              />
+              <Image source={require('../assets/logo.png')} style={styles.logo} resizeMode="cover"/>
             </View>
             
             <Text style={styles.title}>Barber Pro</Text>
             <Text style={styles.subtitle}>Sistema de Gestão Master</Text>
 
-            {/* Input de E-mail */}
             <View style={styles.inputContainer}>
               <Icon name="email-outline" size={22} color="#FFD700" style={styles.icon}/>
-              <TextInput 
-                style={styles.input} 
-                placeholder="E-mail" 
-                placeholderTextColor="#888" 
-                value={email} 
-                onChangeText={setEmail} 
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
+              <TextInput style={styles.input} placeholder="E-mail" placeholderTextColor="#888" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none"/>
             </View>
 
-            {/* Input de Senha */}
             <View style={styles.inputContainer}>
               <Icon name="lock-outline" size={22} color="#FFD700" style={styles.icon}/>
-              <TextInput 
-                style={styles.input} 
-                placeholder="Senha" 
-                placeholderTextColor="#888" 
-                value={senha} 
-                onChangeText={setSenha} 
-                secureTextEntry={!mostrarSenha}
-              />
+              <TextInput style={styles.input} placeholder="Senha" placeholderTextColor="#888" value={senha} onChangeText={setSenha} secureTextEntry={!mostrarSenha}/>
               <TouchableOpacity onPress={() => setMostrarSenha(!mostrarSenha)}>
                 <Icon name={mostrarSenha ? "eye-off-outline" : "eye-outline"} size={22} color="#FFD700" />
               </TouchableOpacity>
             </View>
 
-            {/* Botões de Ação */}
             {loading ? (
               <ActivityIndicator size="large" color="#FFD700" style={{ marginVertical: 20 }} />
             ) : (
@@ -182,73 +110,17 @@ const LoginScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  scrollContainer: { 
-    flexGrow: 1, 
-    justifyContent: 'center', 
-    paddingVertical: 20,
-    alignItems: 'center'
-  },
-  card: { 
-    backgroundColor: 'rgba(26,26,26,0.9)', 
-    padding: width < 400 ? 20 : width * 0.08, 
-    borderRadius: 20, 
-    alignItems: 'center',
-    width: isWeb ? (width > 800 ? 600 : 420) : width * 0.9,
-    shadowColor: '#FFD700',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  logoContainer: { 
-    width: width * 0.25, 
-    height: width * 0.25, 
-    maxWidth: 110,
-    maxHeight: 110,
-    borderRadius: 55,
-    borderWidth: 2, 
-    borderColor: '#FFD700', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    marginBottom: 15,
-    overflow: 'hidden',
-    backgroundColor: '#000'
-  },
+  scrollContainer: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20, alignItems: 'center' },
+  card: { backgroundColor: 'rgba(26,26,26,0.9)', padding: 25, borderRadius: 20, alignItems: 'center', width: '90%', maxWidth: 420 },
+  logoContainer: { width: 100, height: 100, borderRadius: 50, borderWidth: 2, borderColor: '#FFD700', justifyContent: 'center', alignItems: 'center', marginBottom: 15, overflow: 'hidden' },
   logo: { width: '100%', height: '100%' },
-  title: { 
-    fontSize: width * 0.07 > 28 ? 28 : width * 0.07, 
-    fontWeight: 'bold', 
-    color: '#FFD700', 
-    marginBottom: 5 
-  },
+  title: { fontSize: 28, fontWeight: 'bold', color: '#FFD700', marginBottom: 5 },
   subtitle: { fontSize: 14, color: '#888', marginBottom: 25 },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#333',
-    borderRadius: 10,
-    marginBottom: 12,
-    paddingHorizontal: 10,
-    width: '100%',
-    justifyContent: 'space-between'
-  },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#333', borderRadius: 10, marginBottom: 12, paddingHorizontal: 10, width: '100%' },
   icon: { marginRight: 8 },
-  input: { 
-    flex: 1,
-    height: 55, 
-    color: '#FFFFFF', 
-    fontSize: isWeb ? 18 : 16,
-    marginRight: 8
-  },
+  input: { flex: 1, height: 55, color: '#FFFFFF', fontSize: 16 },
   buttonContainer: { width: '100%', marginTop: 10 },
-  button: { 
-    width: '100%', 
-    height: 55, 
-    borderRadius: 10, 
-    justifyContent: 'center', 
-    alignItems: 'center',
-    marginBottom: 10
-  },
+  button: { width: '100%', height: 55, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
   buttonClient: { backgroundColor: '#444' },
   buttonBarber: { backgroundColor: '#FFD700' },
   buttonAdmin: { backgroundColor: '#00CED1' },

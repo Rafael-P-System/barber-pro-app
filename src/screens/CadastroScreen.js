@@ -23,6 +23,9 @@ export default function CadastroScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
+  
+  // 🔥 NOVO: Estado para controlar se é Cliente ou Barbeiro
+  const [papel, setPapel] = useState('CLIENTE'); // Pode ser 'CLIENTE' ou 'BARBEIRO'
 
   const salvarCadastro = async () => {
     if (!nome || !email || !senha) {
@@ -34,16 +37,21 @@ export default function CadastroScreen({ navigation }) {
       return;
     }
     try {
-      // 🔥 Rota atualizada com /api para casar perfeitamente com o seu backend Java
-      const response = await api.post('/api/clientes/cadastro', { nome, email, senha });
+      // 🔥 Rota dinâmica ou unificada enviando a role selecionada pelo botão
+      const response = await api.post('/api/clientes/cadastro', { 
+        nome, 
+        email, 
+        senha,
+        role: papel // Envia 'CLIENTE' ou 'BARBEIRO' dinamicamente
+      });
       
       if (response.status === 200 || response.status === 201) {
+        const msgSucesso = `Cadastro de ${papel === 'CLIENTE' ? 'Cliente' : 'Barbeiro'} realizado com sucesso!`;
         if (Platform.OS === 'web') {
-          window.alert('Cadastro realizado com sucesso!');
+          window.alert(msgSucesso);
         } else {
-          Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
+          Alert.alert('Sucesso', msgSucesso);
         }
-        // 🔥 CORREÇÃO: Alterado de replace para navigate
         navigation.navigate('Login');
       } else {
         if (Platform.OS === 'web') {
@@ -72,14 +80,36 @@ export default function CadastroScreen({ navigation }) {
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           
           <View style={styles.card}>
-            <Text style={styles.header}>Cadastro de Cliente</Text>
+            {/* Título muda conforme a aba selecionada */}
+            <Text style={styles.header}>
+              Cadastro de {papel === 'CLIENTE' ? 'Cliente' : 'Barbeiro'}
+            </Text>
 
-            {/* Input de Nome com Ícone */}
+            {/* 🔥 NOVO: Seletores de Papel (Abas) */}
+            <View style={styles.selectorContainer}>
+              <TouchableOpacity 
+                style={[styles.selectorBtn, papel === 'CLIENTE' && styles.selectorActive]} 
+                onPress={() => setPapel('CLIENTE')}
+              >
+                <Icon name="account" size={18} color={papel === 'CLIENTE' ? '#000' : '#FFD700'} />
+                <Text style={[styles.selectorText, papel === 'CLIENTE' && styles.selectorTextActive]}>Cliente</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.selectorBtn, papel === 'BARBEIRO' && styles.selectorActive]} 
+                onPress={() => setPapel('BARBEIRO')}
+              >
+                <Icon name="content-cut" size={18} color={papel === 'BARBEIRO' ? '#000' : '#FFD700'} />
+                <Text style={[styles.selectorText, papel === 'BARBEIRO' && styles.selectorTextActive]}>Barbeiro</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Input de Nome */}
             <View style={styles.inputContainer}>
               <Icon name="account-outline" size={22} color="#FFD700" style={styles.icon}/>
               <TextInput
                 style={styles.inputField}
-                placeholder="Nome"
+                placeholder={papel === 'CLIENTE' ? "Nome Completo" : "Nome Profissional do Barbeiro"}
                 placeholderTextColor="#888"
                 value={nome}
                 onChangeText={setNome}
@@ -87,7 +117,7 @@ export default function CadastroScreen({ navigation }) {
               />
             </View>
 
-            {/* Input de E-mail com Ícone */}
+            {/* Input de E-mail */}
             <View style={styles.inputContainer}>
               <Icon name="email-outline" size={22} color="#FFD700" style={styles.icon}/>
               <TextInput
@@ -101,7 +131,7 @@ export default function CadastroScreen({ navigation }) {
               />
             </View>
 
-            {/* Input de Senha com Ícone e Mostrar/Esconder */}
+            {/* Input de Senha */}
             <View style={styles.inputContainer}>
               <Icon name="lock-outline" size={22} color="#FFD700" style={styles.icon}/>
               <TextInput
@@ -122,10 +152,9 @@ export default function CadastroScreen({ navigation }) {
             </View>
 
             <TouchableOpacity style={styles.button} onPress={salvarCadastro}>
-              <Text style={styles.buttonText}>Salvar</Text>
+              <Text style={styles.buttonText}>Finalizar Cadastro</Text>
             </TouchableOpacity>
 
-            {/* 🔥 CORREÇÃO: Alterado de replace para navigate no botão de voltar */}
             <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate('Login')}>
               <Text style={styles.backButtonText}>Voltar ao Login</Text>
             </TouchableOpacity>
@@ -161,8 +190,39 @@ const styles = StyleSheet.create({
     color: '#FFD700', 
     fontSize: width < 400 ? 22 : isWeb ? 32 : 28, 
     fontWeight: 'bold', 
-    marginBottom: 30, 
+    marginBottom: 20, 
     textAlign: 'center' 
+  },
+  // 🔥 ESTILOS NOVOS DO SELETOR DE ABAS
+  selectorContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#262424',
+    borderRadius: 10,
+    padding: 4,
+    marginBottom: 25,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#444'
+  },
+  selectorBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  selectorActive: {
+    backgroundColor: '#FFD700',
+  },
+  selectorText: {
+    color: '#FFD700',
+    fontWeight: 'bold',
+    marginLeft: 6,
+    fontSize: 14
+  },
+  selectorTextActive: {
+    color: '#000',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -194,7 +254,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFD700',
     height: isWeb ? 60 : (height * 0.065 > 55 ? 55 : height * 0.065),
     borderRadius: 10,
-    marginTop: 10,
+    marginTop: 15,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center'
