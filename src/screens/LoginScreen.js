@@ -49,11 +49,21 @@ const LoginScreen = ({ navigation }) => {
       });
 
       if (response.status === 200) {
-        // 🛡️ CORREÇÃO DE SEGURANÇA: Evita o erro de 'undefined' buscando o token de forma segura
-        let tokenBruto = response.data?.token || response.data;
+        // 🛡️ BUSCA SEGURA: Pega o token se ele existir dentro de response.data
+        let tokenBruto = response.data?.token;
+
+        // Se o token não veio na chave, checa se a resposta veio como string direta
+        if (!tokenBruto && typeof response.data === 'string') {
+          tokenBruto = response.data;
+        }
+
+        // 🚨 VALIDAÇÃO CRUCIAL: Se mesmo assim não houver token válido, aborta antes de quebrar o replace
+        if (!tokenBruto || tokenBruto === 'undefined') {
+          throw new Error("Token não recebido do servidor.");
+        }
         
-        // Trata o token como string e limpa aspas extras para não quebrar em operações futuras do app
-        let token = typeof tokenBruto === 'string' ? tokenBruto.replace(/"/g, '') : String(tokenBruto);
+        // Trata o token como string e limpa aspas extras com segurança
+        let token = tokenBruto.replace(/"/g, '');
 
         // 🔥 Gravação do Token corrigida e segura para Web/Mobile
         if (Platform.OS === 'web') {
@@ -65,9 +75,9 @@ const LoginScreen = ({ navigation }) => {
         // 🔄 Redirecionamentos de rota pós-login baseados no botão clicado
         if (tipo === 'admin') {
           if (Platform.OS === 'web') {
-            window.alert("Bem-vindo, Rafael! Painel de Gestão liberado.");
+            window.alert("Bem-vindo! Painel de Gestão liberado.");
           } else {
-            Alert.alert("Bem-vindo, Rafael!", "Painel de Gestão liberado.");
+            Alert.alert("Bem-vindo!", "Painel de Gestão liberado.");
           }
           navigation.replace('AdminDashboard');
         } else if (tipo === 'barbeiro') {
@@ -78,11 +88,20 @@ const LoginScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error(error);
+      
+      // Captura se o erro foi a falta de token que nós mesmos barramos acima
+      if (error.message === "Token não recebido do servidor.") {
+        const msgToken = "Erro no formato da resposta do servidor (Token Ausente).";
+        if (Platform.OS === 'web') window.alert(msgToken);
+        else Alert.alert("Erro", msgToken);
+        return;
+      }
+
       const msg = error.response?.status === 401 
         ? "E-mail ou senha incorretos." 
         : error.response?.status === 404
         ? "Usuário não encontrado no banco de dados."
-        : "Erro de conexão. Verifique se o servidor Java está rodando.";
+        : "Erro de conexão. Verifique se o servidor Java está rodando ou acordando.";
       
       if (Platform.OS === 'web') {
         window.alert(msg);
