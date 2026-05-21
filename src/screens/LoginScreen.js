@@ -1,24 +1,15 @@
 import React, { useState } from 'react';
 import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Alert, 
-  ActivityIndicator, 
-  KeyboardAvoidingView, 
-  Platform, 
-  ScrollView, 
-  Image,
-  Dimensions 
+  View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, 
+  ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, 
+  Image, Dimensions 
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import api from '../services/api';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
 const LoginScreen = ({ navigation }) => {
@@ -35,22 +26,28 @@ const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      const endpoint = '/api/clientes/login'; 
+      // 🎯 Lógica corrigida: Admin e Barbeiro usam /admin, Cliente usa /api/clientes
+      const endpoint = (tipoBotaoClicado === 'admin' || tipoBotaoClicado === 'barbeiro') 
+        ? '/admin/login' 
+        : '/api/clientes/login';
+
       const response = await api.post(endpoint, { email, senha });
 
       if (response.status === 200) {
         let tokenBruto = response.data?.token || response.data;
-        if (!tokenBruto || tokenBruto === 'undefined') throw new Error("Token não recebido.");
+        if (!tokenBruto) throw new Error("Token não recebido.");
         
         let token = String(tokenBruto).replace(/"/g, '');
         if (Platform.OS === 'web') localStorage.setItem('@BarberPro:token', token);
         else await AsyncStorage.setItem('@BarberPro:token', token);
 
+        // 🚀 Redirecionamento Dinâmico
         if (tipoBotaoClicado === 'admin') navigation.navigate('AdminDashboard');
         else if (tipoBotaoClicado === 'barbeiro') navigation.navigate('Barbeiro');
         else navigation.navigate('Cliente');
       }
     } catch (error) {
+      console.error(error);
       Alert.alert("Erro", "E-mail ou senha incorretos.");
     } finally {
       setLoading(false);

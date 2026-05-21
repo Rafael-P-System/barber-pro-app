@@ -1,155 +1,86 @@
-import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Dimensions, 
-  TouchableOpacity, 
-  Alert, 
-  Platform,
-  ScrollView,
-  SafeAreaView
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import React, { useState } from 'react';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import api from '../services/api'; // Certifique-se de que o caminho do seu arquivo api.js esteja correto
 
-const { width, height } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
+export default function CadastroBarbeiro({ navigation }) {
+  const [nome, setNome] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [loading, setLoading] = useState(false);
 
-export default function BarberScreen({ navigation }) {
-  const finalizarTurno = () => {
-    Alert.alert("Turno finalizado", "Você encerrou o expediente com sucesso.");
-    // 🔥 CORREÇÃO: Mudado de replace para navigate para evitar travamentos
-    navigation.navigate('Login');
+  const handleCadastro = async () => {
+    if (!nome || !email || !senha) {
+      Alert.alert("Erro", "Por favor, preencha todos os campos.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Esta rota agora corresponde ao método POST que colocamos no AdminController
+      const response = await api.post('/admin/cadastrar-barbeiro', {
+        nome: nome,
+        email: email,
+        senha: senha
+      });
+
+      if (response.status === 200) {
+        Alert.alert("Sucesso", "Barbeiro cadastrado com sucesso!");
+        navigation.goBack(); // Volta para a tela anterior
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Erro", "Não foi possível cadastrar o barbeiro. Verifique o servidor.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
-      {/* SafeAreaView evita que o conteúdo morda a barra de status do celular */}
-      <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-          
-          <View style={styles.header}>
-            <Text style={styles.titulo}>Área do Barbeiro</Text>
+    <View style={styles.container}>
+      <Text style={styles.titulo}>Cadastro de Barbeiro</Text>
+      
+      <TextInput 
+        style={styles.input} 
+        placeholder="Nome do Barbeiro" 
+        placeholderTextColor="#999"
+        value={nome}
+        onChangeText={setNome}
+      />
+      
+      <TextInput 
+        style={styles.input} 
+        placeholder="E-mail" 
+        placeholderTextColor="#999"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
+      
+      <TextInput 
+        style={styles.input} 
+        placeholder="Senha" 
+        placeholderTextColor="#999"
+        value={senha}
+        onChangeText={setSenha}
+        secureTextEntry
+      />
 
-            {/* 🔥 CORREÇÃO: Mudado de replace para navigate no botão Sair */}
-            <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.navigate('Login')}>
-              <Icon name="logout" size={18} color="#FFF" style={{ marginRight: 4 }} />
-              <Text style={styles.logoutText}>Sair</Text>
-            </TouchableOpacity>
-          </View>
-
-          <Text style={styles.subtitulo}>Resumo de Hoje</Text>
-          <View style={styles.row}>
-            <View style={styles.card}>
-              <Text style={styles.cardLabel}>Cortes</Text>
-              <Text style={styles.cardValue}>12</Text>
-            </View>
-            <View style={styles.card}>
-              <Text style={styles.cardLabel}>Barbas</Text>
-              <Text style={styles.cardValue}>8</Text>
-            </View>
-          </View>
-
-          <Text style={styles.subtitulo}>Agendamentos</Text>
-          
-          {/* Item de exemplo - Futuramente mapeado com os dados da API */}
-          <View style={styles.itemAgendamento}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Pedro Santos</Text>
-              <Text style={{ color: '#94A3B8', fontSize: 14 }}>Serviço: Corte tradicional</Text>
-            </View>
-            <TouchableOpacity style={styles.btnDelete} onPress={() => Alert.alert("Agendamento removido")}>
-              <Icon name="trash-can-outline" size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.btnStatus} onPress={finalizarTurno}>
-            <Text style={styles.btnText}>Finalizar Turno</Text>
-          </TouchableOpacity>
-
-        </ScrollView>
-      </SafeAreaView>
-    </LinearGradient>
+      <TouchableOpacity style={styles.botao} onPress={handleCadastro} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#000" />
+        ) : (
+          <Text style={styles.textoBotao}>Cadastrar</Text>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContainer: { padding: 20, flexGrow: 1 },
-  header: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 20, 
-    marginTop: Platform.OS === 'ios' ? 0 : 20 
-  },
-  titulo: { 
-    color: '#FFD700', 
-    fontSize: width < 400 ? 20 : isWeb ? 28 : 24, 
-    fontWeight: 'bold' 
-  },
-  logoutBtn: { 
-    backgroundColor: '#EF4444', 
-    paddingVertical: width < 400 ? 6 : 8,
-    paddingHorizontal: width < 400 ? 10 : 12, 
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  logoutText: { 
-    color: '#FFF', 
-    fontWeight: 'bold', 
-    fontSize: width < 400 ? 14 : isWeb ? 16 : 15 
-  },
-  subtitulo: { 
-    color: '#FFF', 
-    fontSize: width < 400 ? 16 : isWeb ? 20 : 18, 
-    marginVertical: 15, 
-    fontWeight: 'bold' 
-  },
-  row: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', maxWidth: 500, alignSelf: 'center' },
-  card: { 
-    backgroundColor: '#1E293B', 
-    padding: width < 400 ? 12 : 15, 
-    borderRadius: 12, 
-    width: '48%'
-  },
-  cardLabel: { color: '#94A3B8', fontSize: width < 400 ? 12 : 14 },
-  cardValue: { color: '#FFF', fontSize: width < 400 ? 16 : 18, fontWeight: 'bold', marginTop: 4 },
-  btnStatus: { 
-    backgroundColor: '#FFD700', 
-    padding: width < 400 ? 12 : 15, 
-    borderRadius: 10, 
-    marginTop: 30, 
-    width: '100%', 
-    maxWidth: 500, 
-    alignSelf: 'center' 
-  },
-  btnText: { 
-    color: '#000', 
-    textAlign: 'center', 
-    fontWeight: 'bold', 
-    fontSize: width < 400 ? 14 : isWeb ? 18 : 16 
-  },
-  itemAgendamento: { 
-    backgroundColor: '#1E293B', 
-    padding: width < 400 ? 12 : 15, 
-    borderRadius: 10, 
-    marginBottom: 10, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    width: '100%', 
-    maxWidth: 500, 
-    alignSelf: 'center',
-    borderLeftWidth: 4,
-    borderLeftColor: '#FFD700'
-  },
-  btnDelete: { 
-    backgroundColor: '#EF4444', 
-    padding: width < 400 ? 8 : 10, 
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center'
-  }
+  container: { flex: 1, justifyContent: 'center', padding: 20, backgroundColor: '#000' },
+  titulo: { color: '#FFD700', fontSize: 24, fontWeight: 'bold', marginBottom: 30, textAlign: 'center' },
+  input: { backgroundColor: '#1E293B', color: '#FFF', padding: 15, borderRadius: 10, marginBottom: 15 },
+  botao: { backgroundColor: '#FFD700', padding: 15, borderRadius: 10, alignItems: 'center' },
+  textoBotao: { fontWeight: 'bold', fontSize: 16 }
 });
