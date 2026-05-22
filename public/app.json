@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Barber Pro",
+    "slug": "barbearia-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/logo.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./src/assets/logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1A1A1A"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.barbearia.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/logo.png",
+        "backgroundColor": "#1A1A1A"
+      }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "f71db539-d25f-407d-a3d7-ce16f4fbc27c"
+      }
+    },
+    "web": {
+      "favicon": "./src/assets/logo.png",
+      "bundler": "metro",
+      "output": "static"
+    }
+  }
+}
