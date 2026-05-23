@@ -12,7 +12,7 @@ import {
   SafeAreaView
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../services/api';
+import api from '../services/api'; // 🔥 Instância do Axios que aponta para o Render
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -24,13 +24,17 @@ export default function ConfirmacaoScreen({ route, navigation }) {
   const [loading, setLoading] = useState(false);
   const [agendadoComSucesso, setAgendadoComSucesso] = useState(false);
 
-  // Se o parâmetro veio como ID ou Objeto, garantimos que não vai quebrar a tela
+  // Garante o tratamento correto se o serviço vier como ID numérico ou Objeto completo
   const servicoId = typeof servico === 'object' ? servico.id : servico;
   const servicoNome = typeof servico === 'object' ? servico.nome : `Serviço nº ${servico}`;
 
+  // ==========================================
+  // 🔥 FUNÇÃO DE ENVIO OFICIAL PARA O SPRING BOOT
+  // ==========================================
   const confirmarAgendamento = async () => {
     setLoading(true);
     try {
+      // 1. Recupera o cliente logado do armazenamento local do celular
       const usuarioData = await AsyncStorage.getItem('clienteLogado');
       if (!usuarioData) {
         Alert.alert("Erro", "Usuário não identificado. Faça login novamente.");
@@ -38,25 +42,29 @@ export default function ConfirmacaoScreen({ route, navigation }) {
         return;
       }
 
-      const cliente = JSON.parse(usuarioData);
+      const clienteObj = JSON.parse(usuarioData);
       const hora = horario?.hora;
 
-      // 🔥 Chamada oficial para o seu Spring Boot no Render
+      // 2. Dispara o POST exatamente na rota '/agendamentos/agendar' do seu Java
       await api.post('/agendamentos/agendar', {
-        data: new Date().toISOString().split('T')[0], // yyyy-MM-dd
-        hora: hora,
+        data: new Date().toISOString().split('T')[0], // Gera a data de hoje no padrão yyyy-MM-dd
+        hora: hora, // Exemplo: "12:40"
         status: "AGENDADO",
-        cliente: { id: cliente.id },
-        barbeiro: { id: 1 }, // Estático por enquanto, depois puxamos dinâmico
-        servico: { id: servicoId }
+        cliente: { id: clienteObj.id }, // Envia o ID para o relacionamento @ManyToOne do Java
+        barbeiro: { id: 1 }, // ID do Barbeiro (Estático por enquanto, conforme a regra de negócio atual)
+        servico: { id: servicoId } // ID do Serviço selecionado
       });
 
+      // 3. Sucesso! Altera o estado para destravar o botão do WhatsApp e o layout premium
       setAgendadoComSucesso(true);
-      Alert.alert("Sucesso!", "Seu horário foi reservado!");
+      Alert.alert("Sucesso!", "Seu horário foi reservado com sucesso!");
 
     } catch (error) {
-      console.error("❌ Erro ao agendar:", error.response?.data || error.message);
-      Alert.alert("Erro", "Falha ao salvar agendamento no servidor. Tente novamente.");
+      console.error("❌ Erro na requisição Axios:", error.response?.data || error.message);
+      
+      // Captura a mensagem de erro direto do Map.of() do Java se existir
+      const msgErro = error.response?.data?.erro || "Falha ao salvar agendamento no servidor. Tente novamente.";
+      Alert.alert("Erro de Agendamento", msgErro);
     } finally {
       setLoading(false);
     }
@@ -103,13 +111,19 @@ export default function ConfirmacaoScreen({ route, navigation }) {
           </TouchableOpacity>
         )}
 
-        {/* 🔥 CORREÇÃO: Alterado de replace para navigate para manter a estabilidade da pilha do React Navigation */}
+        {/* 🎨 Botão voltar padronizado com o design cinza-grafite premium e ícones inteligentes */}
         <TouchableOpacity 
           onPress={() => navigation.navigate('Cliente')} 
           style={styles.btnVoltar}
           disabled={loading}
         >
-          <Text style={styles.voltarText}>
+          <Icon 
+            name={agendadoComSucesso ? "home" : "arrow-left"} 
+            size={18} 
+            color={agendadoComSucesso ? "#FFD700" : "#94A3B8"} 
+            style={{ marginRight: 8 }} 
+          />
+          <Text style={[styles.voltarText, agendadoComSucesso && { color: '#FFD700' }]}>
             {agendadoComSucesso ? "Voltar para o Início" : "Cancelar e Voltar"}
           </Text>
         </TouchableOpacity>
@@ -177,14 +191,18 @@ const styles = StyleSheet.create({
   btnText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 
   btnVoltar: {
+    flexDirection: 'row',
     marginTop: 15,
     padding: 15,
     borderRadius: 10,
-    backgroundColor: '#334155',
+    backgroundColor: '#1E293B',
+    borderWidth: 1,
+    borderColor: '#334155',
     width: '100%',
     maxWidth: 400,
-    alignItems: 'center'
+    alignItems: 'center',
+    justifyContent: 'center'
   },
 
-  voltarText: { color: '#fff', fontWeight: 'bold' }
+  voltarText: { color: '#94A3B8', fontWeight: 'bold', fontSize: 16 }
 });
