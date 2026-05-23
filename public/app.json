@@ -9,7 +9,7 @@
     "splash": {
       "image": "./src/assets/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1A1A1A"
+      "backgroundColor": "#117986"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -21,7 +21,7 @@
       "package": "com.barbearia.app",
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/logo.png",
-        "backgroundColor": "#1A1A1A"
+        "backgroundColor": "#117986"
       }
     },
     "extra": {
