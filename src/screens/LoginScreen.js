@@ -12,7 +12,7 @@ import api from '../services/api';
 const { width } = Dimensions.get('window');
 const isWeb = Platform.OS === 'web';
 
-const LoginScreen = ({ navigation }) => {
+export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
@@ -20,15 +20,19 @@ const LoginScreen = ({ navigation }) => {
 
   const realizarLogin = async (tipoBotaoClicado) => {
     if (!email || !senha) {
-      Alert.alert('Erro', 'Preencha todos os campos');
+      if (Platform.OS === 'web') {
+        window.alert('Preencha todos os campos');
+      } else {
+        Alert.alert('Erro', 'Preencha todos os campos');
+      }
       return;
     }
 
     setLoading(true);
     try {
-      const endpoint = (tipoBotaoClicado === 'admin' || tipoBotaoClicado === 'barbeiro') 
-        ? '/admin/login' 
-        : '/api/clientes/login';
+      // 🎯 AJUSTE SÉRIO: Usando a rota padrão que o Java aceita para autenticar
+      // Se o seu Java usar outra rota única (ex: '/api/auth/login'), altere aqui.
+      const endpoint = '/api/clientes/login'; 
 
       const response = await api.post(endpoint, { email, senha });
 
@@ -40,13 +44,23 @@ const LoginScreen = ({ navigation }) => {
         if (Platform.OS === 'web') localStorage.setItem('@BarberPro:token', token);
         else await AsyncStorage.setItem('@BarberPro:token', token);
 
-        if (tipoBotaoClicado === 'admin') navigation.navigate('AdminDashboard');
-        else if (tipoBotaoClicado === 'barbeiro') navigation.navigate('Barbeiro');
-        else navigation.navigate('Cliente');
+        // 🚀 Mantém o redirecionamento correto para as telas do app
+        if (tipoBotaoClicado === 'admin') {
+          navigation.navigate('AdminDashboard');
+        } else if (tipoBotaoClicado === 'barbeiro') {
+          navigation.navigate('Barbeiro');
+        } else {
+          navigation.navigate('Cliente');
+        }
       }
     } catch (error) {
       console.error(error);
-      Alert.alert("Erro", "E-mail ou senha incorretos.");
+      const msgErro = "E-mail ou senha incorretos ou erro de conexão.";
+      if (Platform.OS === 'web') {
+        window.alert(msgErro);
+      } else {
+        Alert.alert("Erro", msgErro);
+      }
     } finally {
       setLoading(false);
     }
@@ -54,7 +68,7 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1, width: '100%' }}>
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           <View style={styles.card}>
             <View style={styles.logoContainer}>
@@ -64,7 +78,7 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.title}>Barber Pro</Text>
             <Text style={styles.subtitle}>Sistema de Gestão Master</Text>
 
-            {/* Input de E-mail (Corrigido o fechamento da tag /> na linha 78) */}
+            {/* Input de E-mail */}
             <View style={styles.inputContainer}>
               <Icon name="email-outline" size={22} color="#FFD700" style={styles.icon}/>
               <TextInput 
@@ -119,17 +133,16 @@ const LoginScreen = ({ navigation }) => {
       </KeyboardAvoidingView>
     </LinearGradient>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1 
-  },
+  container: { flex: 1 },
   scrollContainer: { 
     flexGrow: 1, 
     justifyContent: 'center', 
     paddingVertical: 20, 
-    alignItems: 'center' 
+    alignItems: 'center',
+    width: '100%'
   },
   card: { 
     backgroundColor: 'rgba(26,26,26,0.9)', 
@@ -150,21 +163,9 @@ const styles = StyleSheet.create({
     marginBottom: 15, 
     overflow: 'hidden' 
   },
-  logo: { 
-    width: '100%', 
-    height: '100%' 
-  },
-  title: { 
-    fontSize: 28, 
-    fontWeight: 'bold', 
-    color: '#FFD700', 
-    marginBottom: 5 
-  },
-  subtitle: { 
-    fontSize: 14, 
-    color: '#888', 
-    marginBottom: 25 
-  },
+  logo: {  width: '100%', height: '100%' },
+  title: { fontSize: 28, fontWeight: 'bold', color: '#FFD700', marginBottom: 5 },
+  subtitle: { fontSize: 14, color: '#888', marginBottom: 25 },
   inputContainer: { 
     flexDirection: 'row', 
     alignItems: 'center', 
@@ -174,9 +175,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15, 
     width: '100%' 
   },
-  icon: { 
-    marginRight: 8 
-  },
+  icon: { marginRight: 8 },
   input: { 
     flex: 1, 
     height: 55, 
@@ -185,10 +184,7 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
     paddingRight: 10
   },
-  buttonContainer: { 
-    width: '100%', 
-    marginTop: 10 
-  },
+  buttonContainer: { width: '100%', marginTop: 10 },
   button: { 
     width: '100%', 
     height: 55, 
@@ -197,24 +193,9 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     marginBottom: 10 
   },
-  buttonClient: { 
-    backgroundColor: '#444' 
-  },
-  buttonBarber: { 
-    backgroundColor: '#FFD700' 
-  },
-  buttonAdmin: { 
-    backgroundColor: '#00CED1' 
-  },
-  buttonText: { 
-    fontWeight: 'bold', 
-    color: '#FFF', 
-    fontSize: 16 
-  },
-  linkText: { 
-    color: '#FFD700', 
-    marginTop: 15 
-  }
+  buttonClient: { backgroundColor: '#444' },
+  buttonBarber: { backgroundColor: '#FFD700' },
+  buttonAdmin: { backgroundColor: '#00CED1' },
+  buttonText: { fontWeight: 'bold', color: '#FFF', fontSize: 16 },
+  linkText: { color: '#FFD700', marginTop: 15 }
 });
-
-export default LoginScreen;

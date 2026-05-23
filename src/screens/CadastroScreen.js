@@ -24,8 +24,8 @@ export default function CadastroScreen({ navigation }) {
   const [senha, setSenha] = useState('');
   const [mostrarSenha, setMostrarSenha] = useState(false);
   
-  // 🔥 NOVO: Estado para controlar se é Cliente ou Barbeiro
-  const [papel, setPapel] = useState('CLIENTE'); // Pode ser 'CLIENTE' ou 'BARBEIRO'
+  // Mantém o estado para a interface mudar dinamicamente
+  const [papel, setPapel] = useState('CLIENTE'); 
 
   const salvarCadastro = async () => {
     if (!nome || !email || !senha) {
@@ -37,16 +37,15 @@ export default function CadastroScreen({ navigation }) {
       return;
     }
     try {
-      // 🔥 Rota dinâmica ou unificada enviando a role selecionada pelo botão
+      // 🎯 VOLTANDO AO PADRÃO ORIGINAL: Enviando apenas o que o backend processa
       const response = await api.post('/api/clientes/cadastro', { 
         nome, 
         email, 
-        senha,
-        role: papel // Envia 'CLIENTE' ou 'BARBEIRO' dinamicamente
+        senha
       });
       
       if (response.status === 200 || response.status === 201) {
-        const msgSucesso = `Cadastro de ${papel === 'CLIENTE' ? 'Cliente' : 'Barbeiro'} realizado com sucesso!`;
+        const msgSucesso = `Cadastro realizado com sucesso!`;
         if (Platform.OS === 'web') {
           window.alert(msgSucesso);
         } else {
@@ -80,12 +79,12 @@ export default function CadastroScreen({ navigation }) {
         <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
           
           <View style={styles.card}>
-            {/* Título muda conforme a aba selecionada */}
+            {/* O título se adapta visualmente */}
             <Text style={styles.header}>
               Cadastro de {papel === 'CLIENTE' ? 'Cliente' : 'Barbeiro'}
             </Text>
 
-            {/* 🔥 NOVO: Seletores de Papel (Abas) */}
+            {/* Seletores de Papel (Abas) */}
             <View style={styles.selectorContainer}>
               <TouchableOpacity 
                 style={[styles.selectorBtn, papel === 'CLIENTE' && styles.selectorActive]} 
@@ -128,7 +127,7 @@ export default function CadastroScreen({ navigation }) {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
-                autoCorrect={false} // ⚡ ADICIONADO: Proteção contra corretor ortográfico
+                autoCorrect={false}
               />
             </View>
 
@@ -224,7 +223,6 @@ const styles = StyleSheet.create({
   selectorTextActive: {
     color: '#000',
   },
-  // ⚡ ATUALIZADO: paddingHorizontal padronizado para 15
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -238,7 +236,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   icon: { marginRight: 8 },
-  // ⚡ ATUALIZADO: Adicionado paddingRight para textos longos de e-mail não colarem na borda
   inputField: {
     flex: 1,
     color: '#ede5e5',
@@ -246,7 +243,6 @@ const styles = StyleSheet.create({
     height: isWeb ? 60 : (height * 0.065 > 55 ? 55 : height * 0.065),
     paddingRight: 10, 
   },
-  // ⚡ ATUALIZADO: paddingRight ajustado para proteger o texto perto do ícone do olho
   inputSenha: {
     flex: 1,
     color: '#FFF',
