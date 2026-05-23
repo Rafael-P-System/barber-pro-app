@@ -128,6 +128,7 @@ export default function CadastroScreen({ navigation }) {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                autoCorrect={false} // ⚡ ADICIONADO: Proteção contra corretor ortográfico
               />
             </View>
 
@@ -193,7 +194,6 @@ const styles = StyleSheet.create({
     marginBottom: 20, 
     textAlign: 'center' 
   },
-  // 🔥 ESTILOS NOVOS DO SELETOR DE ABAS
   selectorContainer: {
     flexDirection: 'row',
     backgroundColor: '#262424',
@@ -224,31 +224,36 @@ const styles = StyleSheet.create({
   selectorTextActive: {
     color: '#000',
   },
+  // ⚡ ATUALIZADO: paddingHorizontal padronizado para 15
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#383535',
     borderRadius: 10,
     marginBottom: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 15, 
     width: '100%',
     borderWidth: 1,
     borderColor: '#ece2e2',
     justifyContent: 'space-between'
   },
   icon: { marginRight: 8 },
+  // ⚡ ATUALIZADO: Adicionado paddingRight para textos longos de e-mail não colarem na borda
   inputField: {
     flex: 1,
     color: '#ede5e5',
     fontSize: width < 400 ? 14 : isWeb ? 18 : 16,
     height: isWeb ? 60 : (height * 0.065 > 55 ? 55 : height * 0.065),
+    paddingRight: 10, 
   },
+  // ⚡ ATUALIZADO: paddingRight ajustado para proteger o texto perto do ícone do olho
   inputSenha: {
     flex: 1,
     color: '#FFF',
     fontSize: isWeb ? 18 : 16,
     height: isWeb ? 60 : (height * 0.065 > 55 ? 55 : height * 0.065),
-    marginRight: 8
+    marginRight: 8,
+    paddingRight: 10,
   },
   button: {
     backgroundColor: '#FFD700',

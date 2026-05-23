@@ -26,7 +26,6 @@ const LoginScreen = ({ navigation }) => {
 
     setLoading(true);
     try {
-      // 🎯 Lógica corrigida: Admin e Barbeiro usam /admin, Cliente usa /api/clientes
       const endpoint = (tipoBotaoClicado === 'admin' || tipoBotaoClicado === 'barbeiro') 
         ? '/admin/login' 
         : '/api/clientes/login';
@@ -41,7 +40,6 @@ const LoginScreen = ({ navigation }) => {
         if (Platform.OS === 'web') localStorage.setItem('@BarberPro:token', token);
         else await AsyncStorage.setItem('@BarberPro:token', token);
 
-        // 🚀 Redirecionamento Dinâmico
         if (tipoBotaoClicado === 'admin') navigation.navigate('AdminDashboard');
         else if (tipoBotaoClicado === 'barbeiro') navigation.navigate('Barbeiro');
         else navigation.navigate('Cliente');
@@ -66,14 +64,32 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.title}>Barber Pro</Text>
             <Text style={styles.subtitle}>Sistema de Gestão Master</Text>
 
+            {/* Input de E-mail (Corrigido o fechamento da tag /> na linha 78) */}
             <View style={styles.inputContainer}>
               <Icon name="email-outline" size={22} color="#FFD700" style={styles.icon}/>
-              <TextInput style={styles.input} placeholder="E-mail" placeholderTextColor="#888" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none"/>
+              <TextInput 
+                style={styles.input} 
+                placeholder="E-mail" 
+                placeholderTextColor="#888" 
+                value={email} 
+                onChangeText={setEmail} 
+                keyboardType="email-address" 
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
             </View>
 
+            {/* Input de Senha */}
             <View style={styles.inputContainer}>
               <Icon name="lock-outline" size={22} color="#FFD700" style={styles.icon}/>
-              <TextInput style={styles.input} placeholder="Senha" placeholderTextColor="#888" value={senha} onChangeText={setSenha} secureTextEntry={!mostrarSenha}/>
+              <TextInput 
+                style={styles.input} 
+                placeholder="Senha" 
+                placeholderTextColor="#888" 
+                value={senha} 
+                onChangeText={setSenha} 
+                secureTextEntry={!mostrarSenha}
+              />
               <TouchableOpacity onPress={() => setMostrarSenha(!mostrarSenha)}>
                 <Icon name={mostrarSenha ? "eye-off-outline" : "eye-outline"} size={22} color="#FFD700" />
               </TouchableOpacity>
@@ -106,23 +122,99 @@ const LoginScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContainer: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20, alignItems: 'center' },
-  card: { backgroundColor: 'rgba(26,26,26,0.9)', padding: 25, borderRadius: 20, alignItems: 'center', width: '90%', maxWidth: 420 },
-  logoContainer: { width: 100, height: 100, borderRadius: 50, borderWidth: 2, borderColor: '#FFD700', justifyContent: 'center', alignItems: 'center', marginBottom: 15, overflow: 'hidden' },
-  logo: { width: '100%', height: '100%' },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#FFD700', marginBottom: 5 },
-  subtitle: { fontSize: 14, color: '#888', marginBottom: 25 },
-  inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#333', borderRadius: 10, marginBottom: 12, paddingHorizontal: 10, width: '100%' },
-  icon: { marginRight: 8 },
-  input: { flex: 1, height: 55, color: '#FFFFFF', fontSize: 16 },
-  buttonContainer: { width: '100%', marginTop: 10 },
-  button: { width: '100%', height: 55, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
-  buttonClient: { backgroundColor: '#444' },
-  buttonBarber: { backgroundColor: '#FFD700' },
-  buttonAdmin: { backgroundColor: '#00CED1' },
-  buttonText: { fontWeight: 'bold', color: '#FFF', fontSize: 16 },
-  linkText: { color: '#FFD700', marginTop: 15 }
+  container: { 
+    flex: 1 
+  },
+  scrollContainer: { 
+    flexGrow: 1, 
+    justifyContent: 'center', 
+    paddingVertical: 20, 
+    alignItems: 'center' 
+  },
+  card: { 
+    backgroundColor: 'rgba(26,26,26,0.9)', 
+    padding: 25, 
+    borderRadius: 20, 
+    alignItems: 'center', 
+    width: '90%', 
+    maxWidth: 420 
+  },
+  logoContainer: { 
+    width: 100, 
+    height: 100, 
+    borderRadius: 50, 
+    borderWidth: 2, 
+    borderColor: '#FFD700', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginBottom: 15, 
+    overflow: 'hidden' 
+  },
+  logo: { 
+    width: '100%', 
+    height: '100%' 
+  },
+  title: { 
+    fontSize: 28, 
+    fontWeight: 'bold', 
+    color: '#FFD700', 
+    marginBottom: 5 
+  },
+  subtitle: { 
+    fontSize: 14, 
+    color: '#888', 
+    marginBottom: 25 
+  },
+  inputContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: '#333', 
+    borderRadius: 10, 
+    marginBottom: 12, 
+    paddingHorizontal: 15, 
+    width: '100%' 
+  },
+  icon: { 
+    marginRight: 8 
+  },
+  input: { 
+    flex: 1, 
+    height: 55, 
+    color: '#FFFFFF', 
+    fontSize: 16,
+    paddingLeft: 4,
+    paddingRight: 10
+  },
+  buttonContainer: { 
+    width: '100%', 
+    marginTop: 10 
+  },
+  button: { 
+    width: '100%', 
+    height: 55, 
+    borderRadius: 10, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    marginBottom: 10 
+  },
+  buttonClient: { 
+    backgroundColor: '#444' 
+  },
+  buttonBarber: { 
+    backgroundColor: '#FFD700' 
+  },
+  buttonAdmin: { 
+    backgroundColor: '#00CED1' 
+  },
+  buttonText: { 
+    fontWeight: 'bold', 
+    color: '#FFF', 
+    fontSize: 16 
+  },
+  linkText: { 
+    color: '#FFD700', 
+    marginTop: 15 
+  }
 });
 
 export default LoginScreen;
