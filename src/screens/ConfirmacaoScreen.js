@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView, Linking, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -9,10 +9,9 @@ export default function ConfirmacaoScreen({ route, navigation }) {
   const { servico, horario } = route.params || {};
   const [loading, setLoading] = useState(false);
   const [agendadoComSucesso, setAgendadoComSucesso] = useState(false);
-  const [agendamentoId, setAgendamentoId] = useState(null); // 🔥 Estado para o ID gerado
+  const [agendamentoId, setAgendamentoId] = useState(null);
 
   const servicoId = typeof servico === 'object' ? servico.id : servico;
-  const servicoNome = typeof servico === 'object' ? servico.nome : `Serviço nº ${servico}`;
 
   const confirmarAgendamento = async () => {
     setLoading(true);
@@ -29,7 +28,7 @@ export default function ConfirmacaoScreen({ route, navigation }) {
         servico: { id: servicoId }
       });
 
-      setAgendamentoId(response.data.id); // Captura o ID do banco
+      setAgendamentoId(response.data.id);
       setAgendadoComSucesso(true);
       Alert.alert("Sucesso!", "Agendamento confirmado!");
     } catch (error) {
@@ -53,28 +52,41 @@ export default function ConfirmacaoScreen({ route, navigation }) {
   };
 
   return (
-    <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <View style={{ width: '100%', maxWidth: 400, alignItems: 'center' }}>
-          <Text style={{ color: agendadoComSucesso ? '#4ADE80' : '#FFD700', fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
+    <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.card}>
+          <Text style={[styles.titulo, { color: agendadoComSucesso ? '#4ADE80' : '#FFD700' }]}>
             {agendadoComSucesso ? "✅ Confirmado!" : "Confirme seu Horário"}
           </Text>
 
           {!agendadoComSucesso ? (
-            <TouchableOpacity onPress={confirmarAgendamento} style={{ backgroundColor: '#FFD700', padding: 15, borderRadius: 10, width: '100%', alignItems: 'center' }}>
-              {loading ? <ActivityIndicator color="#000" /> : <Text style={{ fontWeight: 'bold' }}>Confirmar e Salvar</Text>}
+            <TouchableOpacity onPress={confirmarAgendamento} style={styles.btnConfirmar}>
+              {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.btnTexto}>Confirmar e Salvar</Text>}
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity onPress={() => Linking.openURL('https://wa.me/5521969412331')} style={{ flexDirection: 'row', backgroundColor: '#25D366', padding: 15, borderRadius: 10, width: '100%', justifyContent: 'center' }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Dúvidas no WhatsApp</Text>
+            <TouchableOpacity onPress={() => Linking.openURL('https://wa.me/5521969412331')} style={styles.btnWhats}>
+              <Text style={styles.btnTextoWhite}>Dúvidas no WhatsApp</Text>
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity onPress={() => agendadoComSucesso ? cancelarNoBanco() : navigation.goBack()} style={{ marginTop: 20 }}>
-            <Text style={{ color: '#f87171', fontWeight: 'bold' }}>{agendadoComSucesso ? "Cancelar Agendamento" : "Voltar"}</Text>
+          <TouchableOpacity onPress={() => agendadoComSucesso ? cancelarNoBanco() : navigation.goBack()} style={styles.btnVoltar}>
+            <Text style={styles.textoVoltar}>{agendadoComSucesso ? "Cancelar Agendamento" : "Voltar"}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
     </LinearGradient>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  safeArea: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
+  card: { width: '100%', maxWidth: 400, alignItems: 'center' },
+  titulo: { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
+  btnConfirmar: { backgroundColor: '#FFD700', padding: 15, borderRadius: 10, width: '100%', alignItems: 'center' },
+  btnWhats: { flexDirection: 'row', backgroundColor: '#25D366', padding: 15, borderRadius: 10, width: '100%', justifyContent: 'center' },
+  btnTexto: { fontWeight: 'bold', color: '#000' },
+  btnTextoWhite: { color: '#fff', fontWeight: 'bold' },
+  btnVoltar: { marginTop: 20 },
+  textoVoltar: { color: '#f87171', fontWeight: 'bold' }
+});

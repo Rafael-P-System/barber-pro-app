@@ -3,8 +3,8 @@ import { Platform } from 'react-native';
 
 const api = axios.create({
   baseURL: 'https://barbearia-api-swti.onrender.com', 
-  // 🔥 Mantido: 90 segundos de tolerância para a máquina do Render acordar
-  timeout: 90000, 
+  // 🔥 Mantido: 120 segundos de tolerância para a máquina do Render acordar
+  timeout: 120000,
 });
 
 // Ajuste de segurança para injetar o Token automaticamente

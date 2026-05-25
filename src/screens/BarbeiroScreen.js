@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, Platform, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../services/api'; // Certifique-se que o caminho está correto
+import api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -11,14 +10,15 @@ export default function BarberScreen({ navigation }) {
   const [agendamentos, setAgendamentos] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. Busca os agendamentos reais da API
   const carregarAgendamentos = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/agendamentos'); // Endpoint que retorna a lista
+      // Aumentamos o timeout na requisição se necessário, mas aqui usaremos o padrão
+      const response = await api.get('/agendamentos');
       setAgendamentos(response.data);
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível carregar a agenda.");
+      console.error("Erro na API:", error);
+      Alert.alert("Erro", "Não foi possível carregar os dados.");
     } finally {
       setLoading(false);
     }
@@ -28,12 +28,11 @@ export default function BarberScreen({ navigation }) {
     carregarAgendamentos();
   }, []);
 
-  // 2. Função para deletar (agora real)
   const deletarAgendamento = async (id) => {
     try {
       await api.delete(`/agendamentos/cancelar/${id}`);
       Alert.alert("Sucesso", "Agendamento removido.");
-      carregarAgendamentos(); // Atualiza a lista
+      carregarAgendamentos();
     } catch (error) {
       Alert.alert("Erro", "Falha ao remover.");
     }
@@ -41,7 +40,7 @@ export default function BarberScreen({ navigation }) {
 
   return (
     <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
-      <SafeAreaView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.safeArea}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
           
           <View style={styles.header}>
@@ -55,13 +54,13 @@ export default function BarberScreen({ navigation }) {
           <Text style={styles.subtitulo}>Agendamentos de Hoje</Text>
 
           {loading ? (
-            <ActivityIndicator color="#FFD700" size="large" />
+            <ActivityIndicator color="#FFD700" size="large" style={{ marginTop: 20 }} />
           ) : agendamentos.length > 0 ? (
             agendamentos.map((item) => (
               <View key={item.id} style={styles.itemAgendamento}>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{item.cliente?.nome || "Cliente"}</Text>
-                  <Text style={{ color: '#94A3B8', fontSize: 14 }}>{item.servico?.nome || "Serviço"} - {item.hora}</Text>
+                  <Text style={styles.nomeCliente}>{item.cliente?.nome || "Cliente"}</Text>
+                  <Text style={styles.infoServico}>{item.servico?.nome || "Serviço"} - {item.hora}</Text>
                 </View>
                 <TouchableOpacity style={styles.btnDelete} onPress={() => deletarAgendamento(item.id)}>
                   <Icon name="trash-can-outline" size={20} color="#fff" />
@@ -69,7 +68,7 @@ export default function BarberScreen({ navigation }) {
               </View>
             ))
           ) : (
-            <Text style={{ color: '#64748B', textAlign: 'center', marginTop: 20 }}>Nenhum agendamento pendente.</Text>
+            <Text style={styles.emptyText}>Nenhum agendamento pendente.</Text>
           )}
 
         </ScrollView>
@@ -78,4 +77,18 @@ export default function BarberScreen({ navigation }) {
   );
 }
 
-// ... (seus estilos permanecem os mesmos)
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  safeArea: { flex: 1 },
+  scrollContainer: { padding: 20, flexGrow: 1 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, marginTop: 20 },
+  titulo: { color: '#FFD700', fontSize: 24, fontWeight: 'bold' },
+  logoutBtn: { backgroundColor: '#EF4444', padding: 8, borderRadius: 8, flexDirection: 'row', alignItems: 'center' },
+  logoutText: { color: '#FFF', fontWeight: 'bold', marginLeft: 4 },
+  subtitulo: { color: '#FFF', fontSize: 18, marginVertical: 15, fontWeight: 'bold' },
+  itemAgendamento: { backgroundColor: '#1E293B', padding: 15, borderRadius: 10, marginBottom: 10, flexDirection: 'row', alignItems: 'center', borderLeftWidth: 4, borderLeftColor: '#FFD700' },
+  nomeCliente: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  infoServico: { color: '#94A3B8', fontSize: 14 },
+  btnDelete: { backgroundColor: '#EF4444', padding: 10, borderRadius: 8, justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
+  emptyText: { color: '#64748B', textAlign: 'center', marginTop: 20 }
+});
