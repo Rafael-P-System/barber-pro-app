@@ -2,8 +2,9 @@ import axios from 'axios';
 import { Platform } from 'react-native';
 
 const api = axios.create({
-  baseURL: 'https://barbearia-api-swti.onrender.com', 
-  // 🔥 Mantido: 120 segundos de tolerância para a máquina do Render acordar
+  // 🔥 URL com o prefixo /api para alinhar com o seu Controller Java
+  baseURL: 'https://barbearia-api-swti.onrender.com/api', 
+  // 🔥 Timeout de 120 segundos para dar tempo do servidor Render sair do repouso
   timeout: 120000,
 });
 
@@ -16,7 +17,6 @@ api.interceptors.request.use(
       if (Platform.OS === 'web') {
         token = localStorage.getItem('@BarberPro:token');
       } else {
-        // O 'require' dinâmico funciona bem, mas precisamos garantir que o await termine
         const AsyncStorage = require('@react-native-async-storage/async-storage').default;
         token = await AsyncStorage.getItem('@BarberPro:token');
       }
@@ -28,11 +28,9 @@ api.interceptors.request.use(
       console.error("Erro ao recuperar token", error);
     }
     
-    // 🔥 IMPORTANTE: Garante que a config (modificada ou não) sempre seja retornada
     return config;
   },
   (error) => {
-    // 🔥 Tratamento de erro caso a própria montagem da requisição falhe
     return Promise.reject(error);
   }
 );
