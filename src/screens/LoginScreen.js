@@ -10,7 +10,6 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import api from '../services/api';
 
 const { width } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -20,31 +19,53 @@ export default function LoginScreen({ navigation }) {
 
   const realizarLogin = async (tipoBotaoClicado) => {
     if (!email || !senha) {
-      if (Platform.OS === 'web') {
-        window.alert('Preencha todos os campos');
-      } else {
-        Alert.alert('Erro', 'Preencha todos os campos');
-      }
+      const msg = 'Preencha todos os campos';
+      if (Platform.OS === 'web') window.alert(msg);
+      else Alert.alert('Erro', msg);
       return;
     }
 
     setLoading(true);
     try {
-      // 🎯 AJUSTE SÉRIO: Usando a rota padrão que o Java aceita para autenticar
-      // Se o seu Java usar outra rota única (ex: '/api/auth/login'), altere aqui.
-      const endpoint = '/api/clientes/login'; 
+      // 🎯 CORREÇÃO 1: Define a rota certa no Java baseada no botão clicado!
+      const endpoint = tipoBotaoClicado === 'cliente' 
+        ? '/api/clientes/login' 
+        : '/admin/login'; 
 
       const response = await api.post(endpoint, { email, senha });
 
       if (response.status === 200) {
-        let tokenBruto = response.data?.token || response.data;
+        const usuario = response.data;
+        let tokenBruto = usuario?.token || usuario;
         if (!tokenBruto) throw new Error("Token não recebido.");
         
         let token = String(tokenBruto).replace(/"/g, '');
-        if (Platform.OS === 'web') localStorage.setItem('@BarberPro:token', token);
-        else await AsyncStorage.setItem('@BarberPro:token', token);
+        
+        // 🎯 CORREÇÃO 2: Valida se o nível retornado pelo Java confere com a intenção do login
+        const nivelUsuario = usuario.nivel ? String(usuario.nivel).toUpperCase() : '';
 
-        // 🚀 Mantém o redirecionamento correto para as telas do app
+        if (tipoBotaoClicado === 'cliente' && nivelUsuario !== 'CLIENTE') {
+          throw { response: { status: 403, data: { erro: "Este e-mail pertence a um Barbeiro ou Admin. Use o botão correspondente." } } };
+        }
+
+        if (tipoBotaoClicado === 'barbeiro' && nivelUsuario !== 'BARBEIRO') {
+          throw { response: { status: 403, data: { erro: "Seu usuário não possui nível de Barbeiro." } } };
+        }
+
+        if (tipoBotaoClicado === 'admin' && nivelUsuario !== 'ADM') {
+          throw { response: { status: 403, data: { erro: "Apenas administradores master podem acessar por este botão." } } };
+        }
+
+        // Se passar nas travas, guarda o token e os dados da sessão
+        if (Platform.OS === 'web') {
+          localStorage.setItem('@BarberPro:token', token);
+          localStorage.setItem('clienteLogado', JSON.stringify(usuario));
+        } else {
+          await AsyncStorage.setItem('@BarberPro:token', token);
+          await AsyncStorage.setItem('clienteLogado', JSON.stringify(usuario));
+        }
+
+        // Redireciona cada um para a sua respectiva tela inicial
         if (tipoBotaoClicado === 'admin') {
           navigation.navigate('AdminDashboard');
         } else if (tipoBotaoClicado === 'barbeiro') {
@@ -55,11 +76,13 @@ export default function LoginScreen({ navigation }) {
       }
     } catch (error) {
       console.error(error);
-      const msgErro = "E-mail ou senha incorretos ou erro de conexão.";
+      // Pega a mensagem exata configurada nas exceções ou no Java (status 403)
+      const msgErro = error.response?.data?.erro || "E-mail ou senha incorretos ou erro de conexão.";
+      
       if (Platform.OS === 'web') {
         window.alert(msgErro);
       } else {
-        Alert.alert("Erro", msgErro);
+        Alert.alert("Acesso Negado", msgErro);
       }
     } finally {
       setLoading(false);
