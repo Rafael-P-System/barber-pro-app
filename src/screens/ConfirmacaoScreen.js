@@ -19,7 +19,8 @@ export default function ConfirmacaoScreen({ route, navigation }) {
       const usuarioData = await AsyncStorage.getItem('clienteLogado');
       const clienteObj = JSON.parse(usuarioData);
       
-      const response = await api.post('/agendamentos/agendar', {
+      // CORREÇÃO: Adicionado /api ao início da rota
+      const response = await api.post('/api/agendamentos/agendar', {
         data: new Date().toISOString().split('T')[0],
         hora: horario?.hora,
         status: "AGENDADO",
@@ -41,7 +42,8 @@ export default function ConfirmacaoScreen({ route, navigation }) {
   const cancelarNoBanco = async () => {
     try {
       setLoading(true);
-      await api.delete(`/agendamentos/cancelar/${agendamentoId}`);
+      // CORREÇÃO: Adicionado /api ao início da rota
+      await api.delete(`/api/agendamentos/cancelar/${agendamentoId}`);
       Alert.alert("Cancelado", "Seu agendamento foi removido.");
       navigation.reset({ index: 0, routes: [{ name: 'Cliente' }] });
     } catch (error) {

@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import api from '../services/api';
-
-const { width } = Dimensions.get('window');
 
 export default function BarberScreen({ navigation }) {
   const [agendamentos, setAgendamentos] = useState([]);
@@ -13,11 +11,10 @@ export default function BarberScreen({ navigation }) {
   const carregarAgendamentos = async () => {
     try {
       setLoading(true);
-      // Aumentamos o timeout na requisição se necessário, mas aqui usaremos o padrão
-      const response = await api.get('/agendamentos');
+      // Chamada completa com o prefixo /api
+      const response = await api.get('/api/agendamentos');
       setAgendamentos(response.data);
     } catch (error) {
-      console.error("Erro na API:", error);
       Alert.alert("Erro", "Não foi possível carregar os dados.");
     } finally {
       setLoading(false);
@@ -30,7 +27,8 @@ export default function BarberScreen({ navigation }) {
 
   const deletarAgendamento = async (id) => {
     try {
-      await api.delete(`/agendamentos/cancelar/${id}`);
+      // Chamada completa com o prefixo /api
+      await api.delete(`/api/agendamentos/cancelar/${id}`);
       Alert.alert("Sucesso", "Agendamento removido.");
       carregarAgendamentos();
     } catch (error) {
@@ -42,7 +40,6 @@ export default function BarberScreen({ navigation }) {
     <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
-          
           <View style={styles.header}>
             <Text style={styles.titulo}>Área do Barbeiro</Text>
             <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.navigate('Login')}>
@@ -70,7 +67,6 @@ export default function BarberScreen({ navigation }) {
           ) : (
             <Text style={styles.emptyText}>Nenhum agendamento pendente.</Text>
           )}
-
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>
