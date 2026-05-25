@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  View, Text, TouchableOpacity, Linking, Alert, 
-  StyleSheet, ActivityIndicator, SafeAreaView 
-} from 'react-native';
+import { View, Text, TouchableOpacity, Alert, ActivityIndicator, SafeAreaView, Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,6 +9,7 @@ export default function ConfirmacaoScreen({ route, navigation }) {
   const { servico, horario } = route.params || {};
   const [loading, setLoading] = useState(false);
   const [agendadoComSucesso, setAgendadoComSucesso] = useState(false);
+  const [agendamentoId, setAgendamentoId] = useState(null); // 🔥 Estado para o ID gerado
 
   const servicoId = typeof servico === 'object' ? servico.id : servico;
   const servicoNome = typeof servico === 'object' ? servico.nome : `Serviço nº ${servico}`;
@@ -22,7 +20,7 @@ export default function ConfirmacaoScreen({ route, navigation }) {
       const usuarioData = await AsyncStorage.getItem('clienteLogado');
       const clienteObj = JSON.parse(usuarioData);
       
-      await api.post('/agendamentos/agendar', {
+      const response = await api.post('/agendamentos/agendar', {
         data: new Date().toISOString().split('T')[0],
         hora: horario?.hora,
         status: "AGENDADO",
@@ -31,77 +29,52 @@ export default function ConfirmacaoScreen({ route, navigation }) {
         servico: { id: servicoId }
       });
 
+      setAgendamentoId(response.data.id); // Captura o ID do banco
       setAgendadoComSucesso(true);
-      Alert.alert("Sucesso!", "Agendamento confirmado com sucesso!");
+      Alert.alert("Sucesso!", "Agendamento confirmado!");
     } catch (error) {
-      const msgErro = error.response?.data?.message || "Erro ao agendar.";
-      Alert.alert("Erro", msgErro);
+      Alert.alert("Erro", error.response?.data?.erro || "Falha ao agendar.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVoltarOuCancelar = () => {
-    if (agendadoComSucesso) {
-      Alert.alert("Cancelar", "Deseja realmente cancelar este agendamento?", [
-        { text: "Não", style: "cancel" },
-        { text: "Sim, Cancelar", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: 'Cliente' }] }) }
-      ]);
-    } else {
-      navigation.goBack();
+  const cancelarNoBanco = async () => {
+    try {
+      setLoading(true);
+      await api.delete(`/agendamentos/cancelar/${agendamentoId}`);
+      Alert.alert("Cancelado", "Seu agendamento foi removido.");
+      navigation.reset({ index: 0, routes: [{ name: 'Cliente' }] });
+    } catch (error) {
+      Alert.alert("Erro", "Falha ao cancelar.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
-      <SafeAreaView style={styles.content}>
-        <View style={styles.responsiveWrapper}>
-          <Text style={agendadoComSucesso ? styles.titleSuccess : styles.title}>
-            {agendadoComSucesso ? "✅ Agendado!" : "Confirme seu Horário"}
+    <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <View style={{ width: '100%', maxWidth: 400, alignItems: 'center' }}>
+          <Text style={{ color: agendadoComSucesso ? '#4ADE80' : '#FFD700', fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>
+            {agendadoComSucesso ? "✅ Confirmado!" : "Confirme seu Horário"}
           </Text>
 
-          <View style={styles.card}>
-            <Icon name="calendar-clock" size={40} color="#FFD700" />
-            <Text style={styles.servico}>{servicoNome}</Text>
-            <Text style={styles.horario}>Horário: {horario?.hora}</Text>
-          </View>
-
           {!agendadoComSucesso ? (
-            <TouchableOpacity onPress={confirmarAgendamento} style={styles.btnConfirmar} disabled={loading}>
-              {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.btnConfirmarText}>Confirmar e Salvar</Text>}
+            <TouchableOpacity onPress={confirmarAgendamento} style={{ backgroundColor: '#FFD700', padding: 15, borderRadius: 10, width: '100%', alignItems: 'center' }}>
+              {loading ? <ActivityIndicator color="#000" /> : <Text style={{ fontWeight: 'bold' }}>Confirmar e Salvar</Text>}
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity onPress={() => Linking.openURL(`https://wa.me/5521969412331`)} style={styles.btnWhats}>
-              <Icon name="whatsapp" size={24} color="#fff" />
-              <Text style={styles.btnText}>Dúvidas no WhatsApp</Text>
+            <TouchableOpacity onPress={() => Linking.openURL('https://wa.me/5521969412331')} style={{ flexDirection: 'row', backgroundColor: '#25D366', padding: 15, borderRadius: 10, width: '100%', justifyContent: 'center' }}>
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Dúvidas no WhatsApp</Text>
             </TouchableOpacity>
           )}
 
-          <TouchableOpacity onPress={handleVoltarOuCancelar} style={styles.btnVoltar}>
-            <Icon name="close-circle-outline" size={18} color="#f87171" />
-            <Text style={styles.voltarText}>
-              {agendadoComSucesso ? "Cancelar Agendamento" : "Cancelar e Voltar"}
-            </Text>
+          <TouchableOpacity onPress={() => agendadoComSucesso ? cancelarNoBanco() : navigation.goBack()} style={{ marginTop: 20 }}>
+            <Text style={{ color: '#f87171', fontWeight: 'bold' }}>{agendadoComSucesso ? "Cancelar Agendamento" : "Voltar"}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
     </LinearGradient>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 },
-  responsiveWrapper: { width: '100%', maxWidth: 400, alignItems: 'center' },
-  title: { color: '#FFD700', fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  titleSuccess: { color: '#4ADE80', fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  card: { backgroundColor: '#1E293B', padding: 25, borderRadius: 12, width: '100%', alignItems: 'center', borderWidth: 1, borderColor: '#334155' },
-  servico: { color: '#fff', fontSize: 18, marginTop: 10, fontWeight: 'bold' },
-  horario: { color: '#94A3B8', marginTop: 5 },
-  btnConfirmar: { backgroundColor: '#FFD700', padding: 15, borderRadius: 10, marginTop: 30, width: '100%', alignItems: 'center' },
-  btnConfirmarText: { color: '#000', fontWeight: 'bold' },
-  btnWhats: { flexDirection: 'row', backgroundColor: '#25D366', padding: 15, borderRadius: 10, marginTop: 30, width: '100%', alignItems: 'center', justifyContent: 'center' },
-  btnText: { color: '#fff', fontWeight: 'bold', marginLeft: 10 },
-  btnVoltar: { flexDirection: 'row', marginTop: 15, padding: 15, width: '100%', alignItems: 'center', justifyContent: 'center' },
-  voltarText: { color: '#f87171', fontWeight: 'bold', marginLeft: 8 }
-});

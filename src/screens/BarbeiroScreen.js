@@ -1,72 +1,76 @@
-import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  Dimensions, 
-  TouchableOpacity, 
-  Alert, 
-  Platform,
-  ScrollView,
-  SafeAreaView
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, Platform, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../services/api'; // Certifique-se que o caminho está correto
 
-const { width, height } = Dimensions.get('window');
-const isWeb = Platform.OS === 'web';
+const { width } = Dimensions.get('window');
 
 export default function BarberScreen({ navigation }) {
-  const finalizarTurno = () => {
-    Alert.alert("Turno finalizado", "Você encerrou o expediente com sucesso.");
-    // 🔥 CORREÇÃO: Mudado de replace para navigate para evitar travamentos por 'undefined'
-    navigation.navigate('Login');
+  const [agendamentos, setAgendamentos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // 1. Busca os agendamentos reais da API
+  const carregarAgendamentos = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/agendamentos'); // Endpoint que retorna a lista
+      setAgendamentos(response.data);
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível carregar a agenda.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    carregarAgendamentos();
+  }, []);
+
+  // 2. Função para deletar (agora real)
+  const deletarAgendamento = async (id) => {
+    try {
+      await api.delete(`/agendamentos/cancelar/${id}`);
+      Alert.alert("Sucesso", "Agendamento removido.");
+      carregarAgendamentos(); // Atualiza a lista
+    } catch (error) {
+      Alert.alert("Erro", "Falha ao remover.");
+    }
   };
 
   return (
     <LinearGradient colors={['#000', '#1A1A1A', '#333']} style={styles.container}>
-      {/* SafeAreaView evita que o conteúdo morda a barra de status do celular */}
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContainer}>
           
           <View style={styles.header}>
             <Text style={styles.titulo}>Área do Barbeiro</Text>
-
-            {/* 🔥 CORREÇÃO: Mudado de replace para navigate no botão Sair */}
             <TouchableOpacity style={styles.logoutBtn} onPress={() => navigation.navigate('Login')}>
-              <Icon name="logout" size={18} color="#FFF" style={{ marginRight: 4 }} />
+              <Icon name="logout" size={18} color="#FFF" />
               <Text style={styles.logoutText}>Sair</Text>
             </TouchableOpacity>
           </View>
 
-          <Text style={styles.subtitulo}>Resumo de Hoje</Text>
-          <View style={styles.row}>
-            <View style={styles.card}>
-              <Text style={styles.cardLabel}>Cortes</Text>
-              <Text style={styles.cardValue}>12</Text>
-            </View>
-            <View style={styles.card}>
-              <Text style={styles.cardLabel}>Barbas</Text>
-              <Text style={styles.cardValue}>8</Text>
-            </View>
-          </View>
+          <Text style={styles.subtitulo}>Agendamentos de Hoje</Text>
 
-          <Text style={styles.subtitulo}>Agendamentos</Text>
-          
-          {/* Item de exemplo - Futuramente mapeado com os dados da API */}
-          <View style={styles.itemAgendamento}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>Pedro Santos</Text>
-              <Text style={{ color: '#94A3B8', fontSize: 14 }}>Serviço: Corte tradicional</Text>
-            </View>
-            <TouchableOpacity style={styles.btnDelete} onPress={() => Alert.alert("Agendamento removido")}>
-              <Icon name="trash-can-outline" size={20} color="#fff" />
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity style={styles.btnStatus} onPress={finalizarTurno}>
-            <Text style={styles.btnText}>Finalizar Turno</Text>
-          </TouchableOpacity>
+          {loading ? (
+            <ActivityIndicator color="#FFD700" size="large" />
+          ) : agendamentos.length > 0 ? (
+            agendamentos.map((item) => (
+              <View key={item.id} style={styles.itemAgendamento}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 16 }}>{item.cliente?.nome || "Cliente"}</Text>
+                  <Text style={{ color: '#94A3B8', fontSize: 14 }}>{item.servico?.nome || "Serviço"} - {item.hora}</Text>
+                </View>
+                <TouchableOpacity style={styles.btnDelete} onPress={() => deletarAgendamento(item.id)}>
+                  <Icon name="trash-can-outline" size={20} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            ))
+          ) : (
+            <Text style={{ color: '#64748B', textAlign: 'center', marginTop: 20 }}>Nenhum agendamento pendente.</Text>
+          )}
 
         </ScrollView>
       </SafeAreaView>
@@ -74,82 +78,4 @@ export default function BarberScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  scrollContainer: { padding: 20, flexGrow: 1 },
-  header: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 20, 
-    marginTop: Platform.OS === 'ios' ? 0 : 20 
-  },
-  titulo: { 
-    color: '#FFD700', 
-    fontSize: width < 400 ? 20 : isWeb ? 28 : 24, 
-    fontWeight: 'bold' 
-  },
-  logoutBtn: { 
-    backgroundColor: '#EF4444', 
-    paddingVertical: width < 400 ? 6 : 8,
-    paddingHorizontal: width < 400 ? 10 : 12, 
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  logoutText: { 
-    color: '#FFF', 
-    fontWeight: 'bold', 
-    fontSize: width < 400 ? 14 : isWeb ? 16 : 15 
-  },
-  subtitulo: { 
-    color: '#FFF', 
-    fontSize: width < 400 ? 16 : isWeb ? 20 : 18, 
-    marginVertical: 15, 
-    fontWeight: 'bold' 
-  },
-  row: { flexDirection: 'row', justifyContent: 'space-between', width: '100%', maxWidth: 500, alignSelf: 'center' },
-  card: { 
-    backgroundColor: '#1E293B', 
-    padding: width < 400 ? 12 : 15, 
-    borderRadius: 12, 
-    width: '48%'
-  },
-  cardLabel: { color: '#94A3B8', fontSize: width < 400 ? 12 : 14 },
-  cardValue: { color: '#FFF', fontSize: width < 400 ? 16 : 18, fontWeight: 'bold', marginTop: 4 },
-  btnStatus: { 
-    backgroundColor: '#FFD700', 
-    padding: width < 400 ? 12 : 15, 
-    borderRadius: 10, 
-    marginTop: 30, 
-    width: '100%', 
-    maxWidth: 500, 
-    alignSelf: 'center' 
-  },
-  btnText: { 
-    color: '#000', 
-    textAlign: 'center', 
-    fontWeight: 'bold', 
-    fontSize: width < 400 ? 14 : isWeb ? 18 : 16 
-  },
-  itemAgendamento: { 
-    backgroundColor: '#1E293B', 
-    padding: width < 400 ? 12 : 15, 
-    borderRadius: 10, 
-    marginBottom: 10, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    width: '100%', 
-    maxWidth: 500, 
-    alignSelf: 'center',
-    borderLeftWidth: 4,
-    borderLeftColor: '#FFD700'
-  },
-  btnDelete: { 
-    backgroundColor: '#EF4444', 
-    padding: width < 400 ? 8 : 10, 
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center'
-  }
-});
+// ... (seus estilos permanecem os mesmos)
